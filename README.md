@@ -8,7 +8,7 @@ deteksi DST, tampilan peta, dan dukungan Bahasa Indonesia / English.
 ## Fitur
 
 - **Papan dot matrix** — jam dan nama kota/zona waktu tampil sebagai matriks titik dengan animasi flip dan suara mekanik (opsional).
-- **291 kota dan zona waktu** — kota utama dunia, ibu kota negara besar, kota-kota penting Indonesia dan Malaysia, serta zona terpencil (stasiun Antarktika, atol Pasifik, dan lainnya). Termasuk *Anywhere on Earth* (AoE) dan UTC.
+- **311 kota dan zona waktu** — kota utama dunia, ibu kota negara besar, kota-kota penting Indonesia dan Malaysia, serta zona terpencil (stasiun Antarktika, atol Pasifik, dan lainnya). Termasuk *Anywhere on Earth* (AoE) dan UTC.
 - **DST otomatis** — status Daylight Saving Time, singkatan zona (EDT, BST, AEDT, WIB, ...), nama zona waktu, dan offset GMT dihitung dari data zona waktu IANA bawaan browser.
 - **Konversi waktu manual** — atur jam dan tanggal (dropdown, scroll, atau slider 24 jam) dan semua kota ikut berubah; ada preset cepat dan tombol kembali ke waktu nyata.
 - **Pengelompokan per tanggal** — baris diurutkan menurut hari dan jam lokal (Kemarin / Hari ini / Besok), dengan penanda jam kerja (Senin–Jumat, 09:00–18:00) dan akhir pekan.
