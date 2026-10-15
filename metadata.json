@@ -1,0 +1,6 @@
+{
+  "name": "World Time - Airport Dot Matrix Clock",
+  "description": "Konverter Jam Dunia interaktif dengan animasi flip dot-matrix, kalkulasi Daylight Saving Time (DST), konversi waktu fleksibel, mode peta, dan dukungan tema gelap.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
