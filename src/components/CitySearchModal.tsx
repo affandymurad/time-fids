@@ -22,15 +22,6 @@ interface CitySearchModalProps {
 
 const PAGE_SIZE = 40;
 
-/** "+5 jam", "-2 jam", "Sama dengan Kota Saya" */
-function formatDifference(hours: number, lang: Language): string {
-  if (Math.abs(hours) < 0.01) return lang === 'id' ? 'Jam sama' : 'Same time';
-  const abs = Math.abs(hours);
-  const num = Number.isInteger(abs) ? String(abs) : abs.toFixed(abs * 4 % 1 === 0 ? 2 : 1).replace(/\.?0+$/, '');
-  const unit = lang === 'id' ? 'jam' : abs === 1 ? 'hour' : 'hours';
-  return `${hours > 0 ? '+' : '−'}${num} ${unit}`;
-}
-
 export const CitySearchModal: React.FC<CitySearchModalProps> = ({
   isOpen,
   onClose,
@@ -150,7 +141,6 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
               </option>
             ))}
           </select>
-          {!pickHome && <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t.diffNote}</p>}
         </div>
 
         {/* Results */}
@@ -208,7 +198,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
                         <div className={`text-sm leading-snug ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                           <span className="font-mono font-bold">{clock}</span>
                           {' · '}
-                          {pickHome ? getGmtOffsetLabel(city.timezone, now) : formatDifference(d.diffFromHomeHours, lang)}
+                          {getGmtOffsetLabel(city.timezone, now)}
                         </div>
                       </div>
                     </div>
