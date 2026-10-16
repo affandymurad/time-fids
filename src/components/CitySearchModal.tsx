@@ -3,7 +3,7 @@ import { City, ThemeMode, Language } from '../types';
 import { WORLD_CITIES_DATABASE, getTimeDetails } from '../utils/timeZones';
 import { CountryFlag } from './CountryFlag';
 import { TRANSLATIONS, getCityName, getCountryName, titleCaseCity } from '../utils/i18n';
-import { Search, X, Plus, Check, Globe } from 'lucide-react';
+import { Search, X, Plus, Check, Globe, MapPin } from 'lucide-react';
 
 interface CitySearchModalProps {
   isOpen: boolean;
@@ -15,6 +15,9 @@ interface CitySearchModalProps {
   /** Timezone of "My City" — used to show how far each city is from the user. */
   homeTimezone: string;
   use24Hour: boolean;
+  /** 'add' = add a city to the board (default); 'pickHome' = choose My City directly. */
+  mode?: 'add' | 'pickHome';
+  homeCityId?: string;
 }
 
 const PAGE_SIZE = 40;
@@ -37,7 +40,10 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
   lang,
   homeTimezone,
   use24Hour,
+  mode = 'add',
+  homeCityId,
 }) => {
+  const pickHome = mode === 'pickHome';
   const [searchTerm, setSearchTerm] = useState('');
   const [region, setRegion] = useState<string>('all');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -45,6 +51,16 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
   const isDark = theme === 'dark';
   const t = TRANSLATIONS[lang];
   const now = useMemo(() => new Date(), [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The city that matches this device's timezone (offered as a one-tap choice when picking My City)
+  const deviceCity = useMemo(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return WORLD_CITIES_DATABASE.find((c) => c.timezone === tz && c.countryCode !== 'un');
+    } catch {
+      return undefined;
+    }
+  }, []);
 
   const regions = [
     { id: 'all', label: t.continentAll },
@@ -88,7 +104,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
       >
         {/* Title */}
         <div className={`px-4 py-3.5 border-b flex items-center justify-between ${isDark ? 'border-[#2f4157]' : 'border-slate-300'}`}>
-          <h2 className="text-lg font-bold">{t.addCity}</h2>
+          <h2 className="text-lg font-bold">{pickHome ? t.pickHomeTitle : t.addCity}</h2>
           <button
             onClick={onClose}
             aria-label={t.done}
@@ -145,6 +161,25 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
 
         {/* Results */}
         <div className="px-4 pb-4 overflow-y-auto space-y-2 flex-1 min-h-[260px]">
+          {pickHome && deviceCity && !searchTerm && region === 'all' && deviceCity.id !== homeCityId && (
+            <button
+              type="button"
+              onClick={() => onAddCity(deviceCity)}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
+                isDark
+                  ? 'bg-emerald-950/60 border-emerald-800 hover:bg-emerald-950'
+                  : 'bg-emerald-50 border-emerald-300 hover:bg-emerald-100'
+              }`}
+            >
+              <MapPin className={`w-5 h-5 shrink-0 ${isDark ? 'text-emerald-300' : 'text-emerald-700'}`} />
+              <span className="min-w-0">
+                <span className="block font-bold text-base">{t.useDeviceZone}</span>
+                <span className={`block text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  {titleCaseCity(getCityName(deviceCity, lang))}, {getCountryName(deviceCity.country, lang, deviceCity.countryCode)}
+                </span>
+              </span>
+            </button>
+          )}
           {results.length === 0 ? (
             <div className={`py-14 text-center text-base flex flex-col items-center gap-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
               <Globe className="w-8 h-8 opacity-60" />
@@ -153,7 +188,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
           ) : (
             <>
               {visible.map((city) => {
-                const added = selectedCityIds.includes(city.id);
+                const added = pickHome ? city.id === homeCityId : selectedCityIds.includes(city.id);
                 const d = getTimeDetails(now, city.timezone, homeTimezone, lang);
                 const clock = use24Hour ? d.time24 : d.time12;
                 return (
@@ -193,7 +228,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
                         }`}
                       >
                         <Check className="w-3.5 h-3.5" />
-                        {t.inBoard}
+                        {pickHome ? t.home : t.inBoard}
                       </span>
                     ) : (
                       <button
@@ -202,8 +237,8 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
                           isDark ? 'bg-amber-500 hover:bg-amber-400 text-slate-950' : 'bg-slate-900 hover:bg-slate-800 text-white'
                         }`}
                       >
-                        <Plus className="w-4 h-4" />
-                        {t.add}
+                        {pickHome ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                        {pickHome ? t.select : t.add}
                       </button>
                     )}
                   </div>

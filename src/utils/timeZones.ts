@@ -4034,10 +4034,50 @@ export function setTimeForTimezone(
 }
 
 
-// Cities shown the first time the app is opened (Jakarta is the default home)
-export const INITIAL_CITIES: City[] = ['jakarta', 'aoe', 'utc']
-  .map((id) => ALL_AVAILABLE_CITIES.find((c) => c.id === id))
-  .filter((c): c is City => Boolean(c));
+/**
+ * Cities shown the first time the app is opened: "My City" first, then Anywhere on Earth and UTC.
+ * My City follows the device's time zone when a matching city exists; otherwise Jakarta.
+ */
+export function getInitialCities(): City[] {
+  const byId = (id: string) => ALL_AVAILABLE_CITIES.find((c) => c.id === id);
+  let home = byId('jakarta');
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const isUtc = tz === 'UTC' || tz === 'Etc/UTC' || tz === 'Etc/GMT';
+    let match: City | undefined;
+    if (isUtc) {
+      match = byId('utc');
+    } else {
+      // Operating systems often report a shared zone (Windows "Bangkok, Hanoi, Jakarta" -> Asia/Bangkok),
+      // so first prefer a city in the user's own country (from the browser language) with the same UTC offset.
+      const now = new Date();
+      const deviceOffset = getGmtOffsetLabel(tz, now);
+      const regions = (typeof navigator !== 'undefined' ? navigator.languages || [navigator.language] : [])
+        .map((l) => {
+          try {
+            return new Intl.Locale(l).maximize().region;
+          } catch {
+            return undefined;
+          }
+        })
+        .filter((r): r is string => Boolean(r));
+      for (const region of regions) {
+        match = ALL_AVAILABLE_CITIES.find(
+          (c) => c.countryCode !== 'un' && c.countryCode.toUpperCase() === region && getGmtOffsetLabel(c.timezone, now) === deviceOffset
+        );
+        if (match) break;
+      }
+      match = match ?? ALL_AVAILABLE_CITIES.find((c) => c.timezone === tz && c.countryCode !== 'un');
+    }
+    if (match) home = match;
+  } catch {
+    // keep Jakarta
+  }
+  const list = [home, byId('aoe'), byId('utc')].filter((c): c is City => Boolean(c));
+  return list.filter((c, i) => list.findIndex((x) => x.id === c.id) === i);
+}
+
+export const INITIAL_CITIES: City[] = getInitialCities();
 
 /** Current UTC offset of a zone as "GMT+1", "GMT-5", "GMT+5:30" (never plain "GMT"). */
 export function getGmtOffsetLabel(timezone: string, date: Date): string {

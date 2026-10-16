@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ThemeMode, City, Language } from '../types';
 import { TRANSLATIONS, getCityName, titleCaseCity } from '../utils/i18n';
 import { getTimeDetails, setTimeForTimezone, getTimeZoneAbbr } from '../utils/timeZones';
-import { RefreshCw, Sliders, X, Calendar } from 'lucide-react';
+import { RefreshCw, Sliders, X, Calendar, MapPin } from 'lucide-react';
 
 interface TimePickerControlsProps {
   currentDate: Date;
@@ -15,6 +15,8 @@ interface TimePickerControlsProps {
   onSyncNow: () => void;
   /** The "My City" board row, shown inside this card. */
   homeRow?: React.ReactNode;
+  /** Opens the "choose My City" picker. */
+  onChangeCity?: () => void;
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -33,6 +35,7 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
   onDateChange,
   onSyncNow,
   homeRow,
+  onChangeCity,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const isDark = theme === 'dark';
@@ -138,6 +141,12 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
             <button type="button" onClick={onSyncNow} className={solidBtn}>
               <RefreshCw className="w-3.5 h-3.5" />
               <span>{t.backToNow}</span>
+            </button>
+          )}
+          {onChangeCity && (
+            <button type="button" onClick={onChangeCity} className={outlineBtn}>
+              <MapPin className="w-3.5 h-3.5 text-amber-600" />
+              <span>{t.changeCity}</span>
             </button>
           )}
           <button type="button" onClick={() => setIsOpen((v) => !v)} className={outlineBtn} aria-expanded={isOpen}>

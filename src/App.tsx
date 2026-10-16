@@ -94,7 +94,7 @@ export default function App() {
     } catch {
       // Fallback
     }
-    return 'jakarta';
+    return INITIAL_CITIES[0].id;
   });
 
   const [theme, setTheme] = useState<ThemeMode>(() => {
@@ -151,6 +151,7 @@ export default function App() {
   const [viewTab, setViewTab] = useState<ViewTab>('clock');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isCitySearchOpen, setIsCitySearchOpen] = useState<boolean>(false);
+  const [isHomePickerOpen, setIsHomePickerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
 
   // 4. Time State & Auto-sync
@@ -330,9 +331,16 @@ export default function App() {
     [cities, homeCityId, lang]
   );
 
+  // Pick My City directly: add it to the board if needed, then make it the reference city
+  const handlePickHome = useCallback((city: City) => {
+    setCities((prev) => (prev.some((c) => c.id === city.id) ? prev : [...prev, city]));
+    setHomeCityId(city.id);
+    setIsHomePickerOpen(false);
+  }, []);
+
   const handleResetCities = useCallback(() => {
     setCities(INITIAL_CITIES);
-    setHomeCityId('jakarta');
+    setHomeCityId(INITIAL_CITIES[0].id);
   }, []);
 
   // Fullscreen toggle
@@ -504,6 +512,7 @@ export default function App() {
             onDateChange={handleDateChange}
             onToggleAutoSync={() => setIsAutoSync(!isAutoSync)}
             onSyncNow={handleSyncToLive}
+            onChangeCity={() => setIsHomePickerOpen(true)}
             homeRow={
               <FidsBoardRow
                 city={homeCity}
@@ -637,6 +646,20 @@ export default function App() {
         lang={lang}
         homeTimezone={homeCity.timezone}
         use24Hour={use24Hour}
+      />
+
+      {/* 1b. Pick "My City" (changes the reference timezone in one step) */}
+      <CitySearchModal
+        isOpen={isHomePickerOpen}
+        onClose={() => setIsHomePickerOpen(false)}
+        onAddCity={handlePickHome}
+        selectedCityIds={cities.map((c) => c.id)}
+        theme={theme}
+        lang={lang}
+        homeTimezone={homeCity.timezone}
+        use24Hour={use24Hour}
+        mode="pickHome"
+        homeCityId={homeCity.id}
       />
 
       {/* 2. Settings Modal */}
