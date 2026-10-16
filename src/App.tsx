@@ -66,7 +66,7 @@ export default function App() {
     } catch {
       // Fallback
     }
-    return 'id'; // Indonesian by default
+    return 'en'; // English by default
   });
 
   const t = TRANSLATIONS[lang];
@@ -425,28 +425,19 @@ export default function App() {
 
         {/* Top Right: [Sliding Language | Sliding Label Mode | Sliding Theme | Sound | Fullscreen] */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
-          {/* Sliding Language Toggle: ID / EN */}
+          {/* Sliding Language Toggle: EN / ID */}
           <div
             className={`h-9 p-1 rounded-full grid grid-cols-2 relative border shadow-xs select-none transition-colors ${
               isDark ? 'bg-[#131c27] border-[#2f4157]' : 'bg-slate-200 border-slate-400/70'
             }`}
             style={{ width: '84px' }}
-            title={lang === 'id' ? 'Bahasa Indonesia (Klik/Geser untuk EN)' : 'English (Click/Slide for ID)'}
+            title={lang === 'id' ? 'Bahasa Indonesia (Klik untuk EN)' : 'English (Click for ID)'}
           >
             <div
               className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-all duration-300 ease-out shadow-xs pointer-events-none ${isDark ? 'bg-amber-500' : 'bg-amber-600'} ${
-                lang === 'en' ? 'left-[calc(50%+2px)]' : 'left-1'
+                lang === 'id' ? 'left-[calc(50%+2px)]' : 'left-1'
               }`}
             />
-            <button
-              type="button"
-              onClick={() => setLang('id')}
-              className={`relative z-10 py-1 rounded-full text-sm font-black transition-colors duration-200 text-center flex items-center justify-center ${
-                lang === 'id' ? (isDark ? 'text-slate-950' : 'text-white') : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-700 hover:text-slate-950'
-              }`}
-            >
-              ID
-            </button>
             <button
               type="button"
               onClick={() => setLang('en')}
@@ -455,6 +446,15 @@ export default function App() {
               }`}
             >
               EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLang('id')}
+              className={`relative z-10 py-1 rounded-full text-sm font-black transition-colors duration-200 text-center flex items-center justify-center ${
+                lang === 'id' ? (isDark ? 'text-slate-950' : 'text-white') : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-700 hover:text-slate-950'
+              }`}
+            >
+              ID
             </button>
           </div>
 

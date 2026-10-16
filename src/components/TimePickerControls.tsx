@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ThemeMode, City, Language } from '../types';
 import { TRANSLATIONS, getCityName, titleCaseCity } from '../utils/i18n';
 import { getTimeDetails, setTimeForTimezone, getTimeZoneAbbr } from '../utils/timeZones';
-import { RefreshCw, Sliders, X, Calendar, MapPin } from 'lucide-react';
+import { RefreshCw, Pencil, X, Calendar, MapPin } from 'lucide-react';
 
 interface TimePickerControlsProps {
   currentDate: Date;
@@ -150,7 +150,7 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
             </button>
           )}
           <button type="button" onClick={() => setIsOpen((v) => !v)} className={outlineBtn} aria-expanded={isOpen}>
-            {isOpen ? <X className="w-3.5 h-3.5" /> : <Sliders className="w-3.5 h-3.5 text-amber-600" />}
+            {isOpen ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5 text-amber-600" />}
             <span>{isOpen ? t.closePicker : t.setTimeDate}</span>
           </button>
         </div>

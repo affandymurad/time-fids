@@ -4034,45 +4034,53 @@ export function setTimeForTimezone(
 }
 
 
+/** IANA time zone reported by this device (e.g. "Asia/Bangkok"), if available. */
+export function getDeviceTimeZone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * The city that best represents this device's time zone.
+ * Operating systems often report a shared zone (Windows "Bangkok, Hanoi, Jakarta" -> Asia/Bangkok),
+ * so a city in the user's own country (from the browser language) with the same UTC offset is preferred.
+ */
+export function getDeviceCity(): City | undefined {
+  const tz = getDeviceTimeZone();
+  if (!tz) return undefined;
+  const byId = (id: string) => ALL_AVAILABLE_CITIES.find((c) => c.id === id);
+  if (tz === 'UTC' || tz === 'Etc/UTC' || tz === 'Etc/GMT') return byId('utc');
+
+  const now = new Date();
+  const deviceOffset = getGmtOffsetLabel(tz, now);
+  const regions = (typeof navigator !== 'undefined' ? navigator.languages || [navigator.language] : [])
+    .map((l) => {
+      try {
+        return new Intl.Locale(l).maximize().region;
+      } catch {
+        return undefined;
+      }
+    })
+    .filter((r): r is string => Boolean(r));
+  for (const region of regions) {
+    const hit = ALL_AVAILABLE_CITIES.find(
+      (c) => c.countryCode !== 'un' && c.countryCode.toUpperCase() === region && getGmtOffsetLabel(c.timezone, now) === deviceOffset
+    );
+    if (hit) return hit;
+  }
+  return ALL_AVAILABLE_CITIES.find((c) => c.timezone === tz && c.countryCode !== 'un');
+}
+
 /**
  * Cities shown the first time the app is opened: "My City" first, then Anywhere on Earth and UTC.
  * My City follows the device's time zone when a matching city exists; otherwise Jakarta.
  */
 export function getInitialCities(): City[] {
   const byId = (id: string) => ALL_AVAILABLE_CITIES.find((c) => c.id === id);
-  let home = byId('jakarta');
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const isUtc = tz === 'UTC' || tz === 'Etc/UTC' || tz === 'Etc/GMT';
-    let match: City | undefined;
-    if (isUtc) {
-      match = byId('utc');
-    } else {
-      // Operating systems often report a shared zone (Windows "Bangkok, Hanoi, Jakarta" -> Asia/Bangkok),
-      // so first prefer a city in the user's own country (from the browser language) with the same UTC offset.
-      const now = new Date();
-      const deviceOffset = getGmtOffsetLabel(tz, now);
-      const regions = (typeof navigator !== 'undefined' ? navigator.languages || [navigator.language] : [])
-        .map((l) => {
-          try {
-            return new Intl.Locale(l).maximize().region;
-          } catch {
-            return undefined;
-          }
-        })
-        .filter((r): r is string => Boolean(r));
-      for (const region of regions) {
-        match = ALL_AVAILABLE_CITIES.find(
-          (c) => c.countryCode !== 'un' && c.countryCode.toUpperCase() === region && getGmtOffsetLabel(c.timezone, now) === deviceOffset
-        );
-        if (match) break;
-      }
-      match = match ?? ALL_AVAILABLE_CITIES.find((c) => c.timezone === tz && c.countryCode !== 'un');
-    }
-    if (match) home = match;
-  } catch {
-    // keep Jakarta
-  }
+  const home = getDeviceCity() ?? byId('jakarta');
   const list = [home, byId('aoe'), byId('utc')].filter((c): c is City => Boolean(c));
   return list.filter((c, i) => list.findIndex((x) => x.id === c.id) === i);
 }

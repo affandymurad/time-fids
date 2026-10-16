@@ -77,17 +77,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={() => onChangeLang('id')}
-              className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 text-sm font-bold transition-all ${
-                lang === 'id'
-                  ? 'border-amber-500 bg-amber-500/15 text-amber-400 shadow-xs'
-                  : 'border-slate-200 dark:border-slate-800 hover:bg-slate-800/40 text-slate-400'
-              }`}
-            >
-              <span>🇮🇩 Bahasa Indonesia</span>
-            </button>
-            <button
-              type="button"
               onClick={() => onChangeLang('en')}
               className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 text-sm font-bold transition-all ${
                 lang === 'en'
@@ -96,6 +85,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               }`}
             >
               <span>🇬🇧 English</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onChangeLang('id')}
+              className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 text-sm font-bold transition-all ${
+                lang === 'id'
+                  ? 'border-amber-500 bg-amber-500/15 text-amber-400 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-800 hover:bg-slate-800/40 text-slate-400'
+              }`}
+            >
+              <span>🇮🇩 Bahasa Indonesia</span>
             </button>
           </div>
         </div>

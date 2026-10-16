@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { City, ThemeMode, Language } from '../types';
-import { WORLD_CITIES_DATABASE, getTimeDetails } from '../utils/timeZones';
+import { WORLD_CITIES_DATABASE, getTimeDetails, getGmtOffsetLabel, getDeviceCity, getDeviceTimeZone } from '../utils/timeZones';
 import { CountryFlag } from './CountryFlag';
 import { TRANSLATIONS, getCityName, getCountryName, titleCaseCity } from '../utils/i18n';
 import { Search, X, Plus, Check, Globe, MapPin } from 'lucide-react';
@@ -52,15 +52,9 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
   const t = TRANSLATIONS[lang];
   const now = useMemo(() => new Date(), [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The city that matches this device's timezone (offered as a one-tap choice when picking My City)
-  const deviceCity = useMemo(() => {
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      return WORLD_CITIES_DATABASE.find((c) => c.timezone === tz && c.countryCode !== 'un');
-    } catch {
-      return undefined;
-    }
-  }, []);
+  // The city that matches this device's time zone (offered as a one-tap choice when picking My City)
+  const deviceCity = useMemo(() => getDeviceCity(), []);
+  const deviceTz = useMemo(() => getDeviceTimeZone(), []);
 
   const regions = [
     { id: 'all', label: t.continentAll },
@@ -156,7 +150,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
               </option>
             ))}
           </select>
-          <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t.diffNote}</p>
+          {!pickHome && <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t.diffNote}</p>}
         </div>
 
         {/* Results */}
@@ -175,7 +169,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
               <span className="min-w-0">
                 <span className="block font-bold text-base">{t.useDeviceZone}</span>
                 <span className={`block text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                  {titleCaseCity(getCityName(deviceCity, lang))}, {getCountryName(deviceCity.country, lang, deviceCity.countryCode)}
+                  {deviceTz ?? deviceCity.timezone} ({getGmtOffsetLabel(deviceCity.timezone, now)})
                 </span>
               </span>
             </button>
@@ -214,7 +208,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
                         <div className={`text-sm leading-snug ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                           <span className="font-mono font-bold">{clock}</span>
                           {' · '}
-                          {formatDifference(d.diffFromHomeHours, lang)}
+                          {pickHome ? getGmtOffsetLabel(city.timezone, now) : formatDifference(d.diffFromHomeHours, lang)}
                         </div>
                       </div>
                     </div>
