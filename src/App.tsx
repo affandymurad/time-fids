@@ -598,7 +598,7 @@ export default function App() {
               <div key={group.dateKey} className="w-full space-y-2">
                 {/* Date Group Header Banner */}
                 <div
-                  className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3.5 sm:px-4 py-2.5 rounded-xl border font-mono font-bold text-sm sm:text-sm tracking-wider transition-all ${
+                  className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3.5 sm:px-4 py-2.5 rounded-xl border font-mono font-bold text-sm max-[420px]:text-xs sm:text-sm tracking-wider transition-all ${
                     group.badgeType === 'same'
                       ? isDark
                         ? 'bg-[#131c27] text-amber-300 border-[#2f4157]'
@@ -613,11 +613,11 @@ export default function App() {
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-amber-500" />
+                    <Calendar className="w-4 h-4 text-amber-500 max-[420px]:hidden" />
                     <span>{group.dateTitle}</span>
                   </div>
                   <span
-                    className={`px-3 py-0.5 rounded-full text-sm sm:text-sm font-black tracking-wide uppercase whitespace-nowrap ${
+                    className={`px-3 py-0.5 rounded-full text-sm max-[420px]:text-xs sm:text-sm font-black tracking-wide uppercase whitespace-nowrap ${
                       group.badgeType === 'same'
                         ? isDark
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { ThemeMode, City, Language } from '../types';
 import { TRANSLATIONS } from '../utils/i18n';
-import { getTimeDetails, setTimeForTimezone } from '../utils/timeZones';
+import { getTimeDetails, setTimeForTimezone, getTimeZoneAbbr } from '../utils/timeZones';
 import { RefreshCw, Clock, Sparkles, Sliders, Check } from 'lucide-react';
 
 interface TimePickerControlsProps {
@@ -163,14 +163,14 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
           <div>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span
-                className={`text-sm font-bold tracking-wider uppercase ${
+                className={`text-sm max-[420px]:text-xs font-bold tracking-wider uppercase ${
                   isDark ? 'text-amber-400' : 'text-slate-800'
                 }`}
               >
                 {isAutoSync ? t.liveSync : t.customTime}
               </span>
               <span
-                className={`text-sm px-2.5 py-0.5 rounded-full font-mono font-bold tracking-wide whitespace-nowrap shrink-0 ${
+                className={`text-sm max-[420px]:text-xs px-2.5 py-0.5 rounded-full font-mono font-bold tracking-wide whitespace-nowrap shrink-0 ${
                   isAutoSync
                     ? isDark
                       ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800'
@@ -197,7 +197,7 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
                 {homeCity.name}
               </strong>{' '}
               <span className={`font-mono ${isDark ? 'text-slate-600 dark:text-slate-400' : 'text-slate-600 dark:text-slate-400'}`}>
-                ({homeCity.tzAbbr || homeCity.timezone})
+                ({getTimeZoneAbbr(homeCity.timezone, homeCity.tzAbbr, new Date(), homeCity.countryCode) || homeCity.timezone})
               </span>
             </p>
           </div>

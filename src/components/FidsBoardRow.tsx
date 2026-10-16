@@ -113,7 +113,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
   onSetHome,
   onRemoveCity,
 }) => {
-  const [showDetails, setShowDetails] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
   const [localLabelMode, setLocalLabelMode] = useState<'city' | 'timezone' | null>(null);
   const t = TRANSLATIONS[lang];
 
@@ -193,6 +193,35 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
         </div>
       ))}
     </div>
+  );
+
+  const modeToggle = (
+  <button
+    onClick={() =>
+      setLocalLabelMode((prev) =>
+        (prev || (globalLabelMode === 'timezone' ? 'timezone' : 'city')) === 'city'
+          ? 'timezone'
+          : 'city'
+      )
+    }
+    title={
+      effectiveMode === 'city'
+        ? lang === 'id' ? 'Tampilkan Zona Waktu' : 'Show Timezone'
+        : lang === 'id' ? 'Tampilkan Nama Kota' : 'Show City'
+    }
+    className={`px-2.5 py-1 rounded-lg text-sm font-bold flex items-center gap-1.5 border transition-all ${
+      effectiveMode === 'city'
+        ? isDark
+          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+          : 'bg-amber-600 text-white border-amber-600 hover:bg-amber-900'
+        : isDark
+        ? 'bg-slate-600 text-white border-slate-500 hover:bg-slate-500'
+        : 'bg-slate-800 text-white border-slate-800 hover:bg-slate-950'
+    }`}
+  >
+    {effectiveMode === 'city' ? <Building2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+    <span>{effectiveMode === 'city' ? t.city : t.timezone}</span>
+  </button>
   );
 
   const dock = (
@@ -334,54 +363,31 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
               </strong>
               {(() => {
                 const abbr = getTimeZoneAbbr(city.timezone, city.tzAbbr, new Date(), city.countryCode);
-                return /^[A-Za-z]{2,5}$/.test(abbr) && !getTimeZoneName(city.timezone, new Date(), lang).includes(`(${abbr})`) ? <span className="font-mono font-bold"> · {abbr}</span> : null;
+                return /^[A-Za-z]{2,5}$/.test(abbr) && !getTimeZoneName(city.timezone, new Date(), lang).includes(`(${abbr})`) ? <span className="font-mono font-bold whitespace-nowrap">{" · "}{abbr}</span> : null;
               })()}{" "}
               ({city.timezone}, {timeDetails.offsetStr})
               </span>
             </span>
-    {/* Toggle between City Name and Timezone Name for this item */}
-    <button
-      onClick={() =>
-        setLocalLabelMode((prev) =>
-          (prev || (globalLabelMode === 'timezone' ? 'timezone' : 'city')) === 'city'
-            ? 'timezone'
-            : 'city'
-        )
-      }
-      title={
-        effectiveMode === 'city'
-          ? lang === 'id' ? 'Tampilkan Zona Waktu' : 'Show Timezone'
-          : lang === 'id' ? 'Tampilkan Nama Kota' : 'Show City'
-      }
-      className={`px-2.5 py-1 rounded-lg text-sm font-bold flex items-center gap-1.5 border transition-all ${
-        effectiveMode === 'city'
-          ? isDark
-            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-            : 'bg-amber-600 text-white border-amber-600 hover:bg-amber-900'
-          : isDark
-          ? 'bg-slate-600 text-white border-slate-500 hover:bg-slate-500'
-          : 'bg-slate-800 text-white border-slate-800 hover:bg-slate-950'
-      }`}
-    >
-      {effectiveMode === 'city' ? <Building2 className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
-      <span>{effectiveMode === 'city' ? t.city : t.timezone}</span>
-    </button>
+            {isWide && modeToggle}
           </div>
-          <div className="flex items-center gap-2">
-            <CountryFlag countryCode={city.countryCode} countryName={getCountryName(city.country, lang, city.countryCode)} size="sm" />
-            <span>{getCountryName(city.country, lang, city.countryCode)}</span>
-            {(
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 w-full sm:w-auto">
+            <span className="flex items-center gap-2 min-w-0">
+              <CountryFlag countryCode={city.countryCode} countryName={getCountryName(city.country, lang, city.countryCode)} size="sm" />
+              <span>{getCountryName(city.country, lang, city.countryCode)}</span>
+            </span>
+            <span className="flex items-center gap-2 ml-auto sm:ml-5">
+              {!isWide && modeToggle}
               <a
                 href={wikipediaUrl(city, lang)}
                 target="_blank"
                 rel="noopener noreferrer"
                 title={lang === "id" ? `Buka Wikipedia: ${toTitleCase(city.name)}` : `Open Wikipedia: ${toTitleCase(city.name)}`}
-                className="ml-3 sm:ml-5 px-1.5 py-0.5 rounded-sm bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300 dark:bg-slate-500/20 font-mono text-sm font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                className="px-1.5 py-1 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300 font-mono text-sm font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
               >
                 <img src={wikipediaLogo} alt="Wikipedia" className="w-4 h-4" draggable={false} />
                 {city.code ? (lang === "id" ? `Kota ${city.code}` : `${city.code} City`) : "Wikipedia"}
               </a>
-            )}
+            </span>
           </div>
         </div>
       )}
