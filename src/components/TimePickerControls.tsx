@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ThemeMode, City, Language } from '../types';
 import { TRANSLATIONS, getCityName, titleCaseCity } from '../utils/i18n';
 import { getTimeDetails, setTimeForTimezone, getTimeZoneAbbr } from '../utils/timeZones';
-import { RefreshCw, Sliders, X } from 'lucide-react';
+import { RefreshCw, Sliders, X, Calendar } from 'lucide-react';
 
 interface TimePickerControlsProps {
   currentDate: Date;
@@ -68,6 +68,12 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
     const target = new Date(Date.now() + days * 86400 * 1000);
     onDateChange(setTimeForTimezone(target, homeCity.timezone, { hour: 9, minute: 0 }));
   };
+
+  const realToday = getTimeDetails(new Date(), homeCity.timezone, homeCity.timezone, lang);
+  const isToday =
+    realToday.yearNumber === details.yearNumber &&
+    realToday.monthNumber === details.monthNumber &&
+    realToday.dayNumber === details.dayNumber;
 
   const abbr = getTimeZoneAbbr(homeCity.timezone, homeCity.tzAbbr, currentDate, homeCity.countryCode);
   const cityName = titleCaseCity(getCityName(homeCity, lang));
@@ -142,7 +148,31 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
       </div>
 
       {homeRow && (
-        <div className={`mt-3 pt-3 border-t ${isDark ? 'border-[#2f4157]' : 'border-slate-300'}`}>{homeRow}</div>
+        <div className={`mt-3 pt-3 border-t ${isDark ? 'border-[#2f4157]' : 'border-slate-300'}`}>
+          {/* Date header for the time shown below (same look as the date headers in the list) */}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 mb-1.5">
+            <span
+              className={`flex items-center gap-2 font-mono font-bold text-sm max-[420px]:text-xs tracking-wider uppercase ${
+                isDark ? 'text-amber-300' : 'text-slate-800'
+              }`}
+            >
+              <Calendar className="w-4 h-4 text-amber-600 max-[420px]:hidden" />
+              {details.fullDateStr}
+            </span>
+            {isToday && (
+              <span
+                className={`px-3 py-0.5 rounded-full text-sm max-[420px]:text-xs font-black tracking-wide uppercase whitespace-nowrap ${
+                  isDark
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    : 'bg-slate-300 text-slate-900'
+                }`}
+              >
+                {t.today}
+              </span>
+            )}
+          </div>
+          {homeRow}
+        </div>
       )}
 
       {isOpen && (
