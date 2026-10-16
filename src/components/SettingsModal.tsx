@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThemeMode, DotColor, BoardLabelMode, Language } from '../types';
 import { TRANSLATIONS } from '../utils/i18n';
-import { X, Volume2, VolumeX, Moon, Sun, Clock, RotateCcw, Palette } from 'lucide-react';
+import { X, Volume2, VolumeX, Moon, Sun, Clock, RotateCcw, Palette, Maximize2, Minimize2 } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -19,6 +19,8 @@ interface SettingsModalProps {
   lang: Language;
   onChangeLang: (lang: Language) => void;
   onResetCities: () => void;
+  isFullscreen: boolean;
+  onToggleFullscreen: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -37,6 +39,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   lang,
   onChangeLang,
   onResetCities,
+  isFullscreen,
+  onToggleFullscreen,
 }) => {
   if (!isOpen) return null;
 
@@ -246,12 +250,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
         </div>
 
+        {/* 7. Fullscreen */}
+        <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#192432]">
+          <div className="flex items-center gap-2.5">
+            {isFullscreen ? <Minimize2 className="w-5 h-5 text-amber-500" /> : <Maximize2 className="w-5 h-5 text-amber-500" />}
+            <div>
+              <div className="text-sm font-bold">{t.fullscreen}</div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">{t.fullscreenDesc}</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onToggleFullscreen}
+            className="px-3 py-1 text-sm font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"
+          >
+            {isFullscreen ? t.fullscreenOff : t.fullscreenOn}
+          </button>
+        </div>
+
         {/* Reset & Done Actions */}
         <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
           <button
             type="button"
             onClick={() => {
-              if (window.confirm('Reset daftar kota ke default (Jakarta, Tokyo, London, New York, Dubai, Los Angeles)?')) {
+              if (window.confirm(t.resetConfirm)) {
                 onResetCities();
                 onClose();
               }

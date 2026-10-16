@@ -258,6 +258,7 @@ export default function App() {
 
     cities.forEach((city) => {
       const isHome = city.id === homeCity.id;
+      if (isHome) return; // My City lives inside the Current Time section
       const details = getTimeDetails(currentDate, city.timezone, homeCity.timezone, lang);
 
       const dateKey = `${details.yearNumber}-${String(details.monthNumber).padStart(2, '0')}-${String(details.dayNumber).padStart(2, '0')}`;
@@ -403,13 +404,14 @@ export default function App() {
             onClick={() => setIsSettingsOpen(true)}
             title={t.settings}
             aria-label={t.settingsLabel}
-            className={`w-9 h-9 rounded-full flex items-center justify-center border shadow-xs transition-transform active:scale-95 ${
+            className={`h-9 w-9 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border shadow-xs text-sm font-bold transition-transform active:scale-95 ${
               isDark
                 ? 'bg-[#131c27] border-[#2f4157] text-slate-300 hover:text-white hover:bg-slate-800'
                 : 'bg-white border-slate-300 text-slate-700 hover:text-slate-950 hover:bg-slate-50'
             }`}
           >
             <Settings className="w-4 h-4" />
+            <span className="hidden sm:inline">{t.settings}</span>
           </button>
         </div>
 
@@ -448,50 +450,6 @@ export default function App() {
             </button>
           </div>
 
-          {/* Sliding Toggle: Kota / Zona Waktu (City vs Timezone) */}
-          <div
-            className={`h-9 min-w-[188px] max-[380px]:min-w-[150px] p-1 rounded-full grid grid-cols-2 relative border shadow-xs select-none transition-colors ${
-              isDark ? 'bg-[#131c27] border-[#2f4157]' : 'bg-slate-200 border-slate-400/70'
-            }`}
-            title={
-              globalLabelMode === 'city'
-                ? lang === 'id' ? 'Menampilkan Nama Kota (Geser untuk Zona Waktu)' : 'Showing City Names (Slide for Timezone)'
-                : lang === 'id' ? 'Menampilkan Zona Waktu (Geser untuk Nama Kota)' : 'Showing Timezones (Slide for City)'
-            }
-          >
-            <div
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-all duration-300 ease-out shadow-xs pointer-events-none ${isDark ? 'bg-amber-500' : 'bg-amber-600'} ${
-                globalLabelMode === 'timezone' ? 'left-[calc(50%+2px)]' : 'left-1'
-              }`}
-            />
-            <button
-              type="button"
-              onClick={() => setGlobalLabelMode('city')}
-              className={`relative z-10 px-3 max-[380px]:px-1.5 max-[380px]:text-xs py-1 rounded-full text-sm font-bold transition-colors duration-200 text-center flex items-center justify-center ${
-                globalLabelMode === 'city'
-                  ? (isDark ? 'text-slate-950 font-black' : 'text-white font-black')
-                  : isDark
-                  ? 'text-slate-400 hover:text-white'
-                  : 'text-slate-700 hover:text-slate-950'
-              }`}
-            >
-              {t.city}
-            </button>
-            <button
-              type="button"
-              onClick={() => setGlobalLabelMode('timezone')}
-              className={`relative z-10 px-3 max-[380px]:px-1.5 max-[380px]:text-xs py-1 rounded-full text-sm font-bold transition-colors duration-200 text-center flex items-center justify-center ${
-                globalLabelMode === 'timezone'
-                  ? (isDark ? 'text-slate-950 font-black' : 'text-white font-black')
-                  : isDark
-                  ? 'text-slate-400 hover:text-white'
-                  : 'text-slate-700 hover:text-slate-950'
-              }`}
-            >
-              {t.timezone}
-            </button>
-          </div>
-
           {/* Sliding Dark / Light Mode Switch */}
           <div
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -513,36 +471,6 @@ export default function App() {
               {isDark ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
             </div>
           </div>
-
-          {/* Sound Toggle */}
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            title={soundEnabled ? t.soundMute : t.soundActive}
-            className={`w-9 h-9 rounded-full flex items-center justify-center border shadow-xs transition-colors ${
-              isDark
-                ? 'bg-[#131c27] border-[#2f4157] text-slate-300 hover:bg-slate-800'
-                : 'bg-white border-slate-400/70 text-slate-800 hover:bg-slate-50'
-            }`}
-          >
-            {soundEnabled ? (
-              <Volume2 className={`w-4 h-4 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
-            ) : (
-              <VolumeX className="w-4 h-4 text-slate-600" />
-            )}
-          </button>
-
-          {/* Fullscreen Button */}
-          <button
-            onClick={toggleFullscreen}
-            title={lang === 'id' ? 'Layar Penuh' : 'Fullscreen'}
-            className={`w-9 h-9 rounded-full flex items-center justify-center border shadow-xs transition-colors ${
-              isDark
-                ? 'bg-[#131c27] border-[#2f4157] text-slate-300 hover:bg-slate-800'
-                : 'bg-white border-slate-400/70 text-slate-800 hover:bg-slate-50'
-            }`}
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
 
           {/* Author link */}
           <a
@@ -576,6 +504,25 @@ export default function App() {
             onDateChange={handleDateChange}
             onToggleAutoSync={() => setIsAutoSync(!isAutoSync)}
             onSyncNow={handleSyncToLive}
+            homeRow={
+              <FidsBoardRow
+                city={homeCity}
+                timeDetails={getTimeDetails(currentDate, homeCity.timezone, homeCity.timezone, lang)}
+                isHome
+                embedded
+                canDelete={cities.length > 1}
+                totalCityColumns={Math.max(16, ...cities.map((c) => getCityName(c, lang).length))}
+                theme={theme}
+                dotColor={dotColor}
+                soundEnabled={soundEnabled}
+                use24Hour={use24Hour}
+                globalLabelMode={globalLabelMode}
+                lang={lang}
+                eventDate={currentDate}
+                onSetHome={(c) => setHomeCityId(c.id)}
+                onRemoveCity={handleRemoveCity}
+              />
+            }
           />
         </div>
 
@@ -594,6 +541,7 @@ export default function App() {
         ) : (
           /* ================= DATE-GROUPED FIDS BOARD VIEW ================= */
           <div className="relative py-2 flex flex-col items-center justify-center space-y-5 w-full">
+            <p className={`text-sm text-center ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t.tapHint}</p>
             {groupedCitiesByDate.map((group) => (
               <div key={group.dateKey} className="w-full space-y-2">
                 {/* Date Group Header Banner */}
@@ -687,6 +635,8 @@ export default function App() {
         selectedCityIds={cities.map((c) => c.id)}
         theme={theme}
         lang={lang}
+        homeTimezone={homeCity.timezone}
+        use24Hour={use24Hour}
       />
 
       {/* 2. Settings Modal */}
@@ -706,6 +656,8 @@ export default function App() {
         lang={lang}
         onChangeLang={setLang}
         onResetCities={handleResetCities}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullscreen}
       />
     </div>
   );

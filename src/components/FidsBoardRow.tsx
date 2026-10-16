@@ -93,6 +93,8 @@ interface FidsBoardRowProps {
   globalLabelMode: BoardLabelMode;
   lang: Language;
   eventDate: Date;
+  /** Render without its own card (used inside the Current Time section). */
+  embedded?: boolean;
   onSetHome: (city: City) => void;
   onRemoveCity: (cityId: string) => void;
 }
@@ -110,6 +112,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
   globalLabelMode,
   lang,
   eventDate,
+  embedded = false,
   onSetHome,
   onRemoveCity,
 }) => {
@@ -227,31 +230,19 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
   const dock = (
         <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0 pl-2">
 
-          {/* Home indicator pill or Set Home button */}
-          {isHome ? (
+          {/* Badge marking the reference city ("My City") */}
+          {isHome && (
             <span
-              className={`px-2.5 py-1 text-sm font-bold rounded-full flex items-center gap-1 shadow-xs ${
+              title={t.myCityHelp}
+              className={`px-2.5 py-1 text-xs sm:text-sm font-mono font-bold rounded-full flex items-center gap-1.5 whitespace-nowrap ${
                 isDark
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                  : 'bg-amber-100 text-amber-900 border border-amber-300'
+                  ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800'
+                  : 'bg-emerald-50 text-emerald-800 border border-emerald-300'
               }`}
             >
-              <Home className="w-3 h-3" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/25" />
               {t.home}
             </span>
-          ) : (
-            <button
-              onClick={() => onSetHome(city)}
-              title={t.setHome}
-              className={`px-2 py-1 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors ${
-                isDark
-                  ? 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'
-                  : 'hover:bg-slate-200 text-slate-800 hover:text-slate-950'
-              }`}
-            >
-              <Home className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline">{t.setHome}</span>
-            </button>
           )}
 
           {/* Add this moment to a calendar (Google / Apple iCal / Outlook.com / Office 365 / Yahoo) */}
@@ -293,8 +284,12 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
 
   return (
     <div
-      className={`group relative rounded-xl transition-all duration-200 px-3 py-2.5 sm:px-4 sm:py-3 border ${
-        isDark
+      className={embedded ? 'group relative pt-1' : `group relative rounded-xl transition-all duration-200 px-3 py-2.5 sm:px-4 sm:py-3 border ${
+        isHome
+          ? isDark
+            ? 'bg-[#131c27]/90 hover:bg-[#192432] border-emerald-700/70 ring-1 ring-emerald-600/30 shadow-md'
+            : 'bg-white hover:bg-white border-emerald-500/70 ring-1 ring-emerald-500/30 shadow-xs'
+          : isDark
           ? 'bg-[#131c27]/90 hover:bg-[#192432] border-[#2f4157] shadow-md'
           : 'bg-white/85 hover:bg-white border-slate-300/80 shadow-xs'
       }`}
@@ -365,7 +360,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
                 const abbr = getTimeZoneAbbr(city.timezone, city.tzAbbr, new Date(), city.countryCode);
                 return /^[A-Za-z]{2,5}$/.test(abbr) && !getTimeZoneName(city.timezone, new Date(), lang).includes(`(${abbr})`) ? <span className="font-mono font-bold whitespace-nowrap">{" · "}{abbr}</span> : null;
               })()}{" "}
-              ({city.timezone}, {timeDetails.offsetStr})
+              <span title={city.timezone}>({timeDetails.offsetStr})</span>
               </span>
             </span>
             {isWide && modeToggle}
@@ -388,6 +383,24 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
                 {city.code ? (lang === "id" ? `Kota ${city.code}` : `${city.code} City`) : "Wikipedia"}
               </a>
             </span>
+          </div>
+          <div className="w-full flex flex-wrap items-center gap-2">
+            {isHome ? (
+              <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t.myCityHelp}</p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onSetHome(city)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1.5 border transition-colors ${
+                  isDark
+                    ? 'bg-[#192432] border-[#2f4157] text-slate-100 hover:bg-[#233246]'
+                    : 'bg-white border-slate-400/70 text-slate-900 hover:bg-slate-200'
+                }`}
+              >
+                <Home className="w-4 h-4" />
+                {t.setHome}
+              </button>
+            )}
           </div>
         </div>
       )}

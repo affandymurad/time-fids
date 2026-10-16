@@ -252,7 +252,7 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
           {/* Re-center Home button */}
           <button
             onClick={handleCenterHome}
-            title={lang === 'id' ? 'Pusatkan ke Kota Utama' : 'Center to Home City'}
+            title={lang === 'id' ? 'Pusatkan ke Kota Saya' : 'Center on My City'}
             className={`p-2 rounded-lg border shadow-lg flex items-center justify-center transition-all ${
               isDark
                 ? 'bg-[#131c27]/90 hover:bg-[#192432] text-amber-400 border-slate-700'
