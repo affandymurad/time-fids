@@ -14,6 +14,9 @@ import {
   getTimeDetails,
 } from './utils/timeZones';
 import { TRANSLATIONS, getCityName } from './utils/i18n';
+import { playAddSound } from './utils/audio';
+import { SegmentedToggle } from './components/SegmentedToggle';
+import { HelpModal } from './components/HelpModal';
 import { FidsBoardRow } from './components/FidsBoardRow';
 import { TimePickerControls } from './components/TimePickerControls';
 import { CitySearchModal } from './components/CitySearchModal';
@@ -22,6 +25,7 @@ import { MapLibreView } from './components/MapLibreView';
 import {
   Settings,
   UserRound,
+  CircleHelp,
   Maximize2,
   Minimize2,
   Plus,
@@ -152,6 +156,7 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isCitySearchOpen, setIsCitySearchOpen] = useState<boolean>(false);
   const [isHomePickerOpen, setIsHomePickerOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
 
   // 4. Time State & Auto-sync
@@ -310,12 +315,22 @@ export default function App() {
   }, [cities, currentDate, homeCity, lang, t]);
 
   // City management handlers
-  const handleAddCity = useCallback((city: City) => {
-    setCities((prev) => {
-      if (prev.some((c) => c.id === city.id)) return prev;
-      return [...prev, city];
-    });
+  // Id of the row that was just added (drives its enter animation)
+  const [enteringId, setEnteringId] = useState<string | null>(null);
+  const flagEntering = useCallback((id: string) => {
+    setEnteringId(id);
+    window.setTimeout(() => setEnteringId((cur) => (cur === id ? null : cur)), 700);
   }, []);
+
+  const handleAddCity = useCallback(
+    (city: City) => {
+      if (cities.some((c) => c.id === city.id)) return;
+      setCities((prev) => (prev.some((c) => c.id === city.id) ? prev : [...prev, city]));
+      flagEntering(city.id);
+      if (soundEnabled) playAddSound();
+    },
+    [cities, flagEntering, soundEnabled]
+  );
 
   const handleRemoveCity = useCallback(
     (cityId: string) => {
@@ -332,11 +347,18 @@ export default function App() {
   );
 
   // Pick My City directly: add it to the board if needed, then make it the reference city
-  const handlePickHome = useCallback((city: City) => {
-    setCities((prev) => (prev.some((c) => c.id === city.id) ? prev : [...prev, city]));
-    setHomeCityId(city.id);
-    setIsHomePickerOpen(false);
-  }, []);
+  const handlePickHome = useCallback(
+    (city: City) => {
+      if (!cities.some((c) => c.id === city.id)) {
+        setCities((prev) => (prev.some((c) => c.id === city.id) ? prev : [...prev, city]));
+        flagEntering(city.id);
+      }
+      setHomeCityId(city.id);
+      setIsHomePickerOpen(false);
+      if (soundEnabled) playAddSound();
+    },
+    [cities, flagEntering, soundEnabled]
+  );
 
   const handleResetCities = useCallback(() => {
     setCities(INITIAL_CITIES);
@@ -372,12 +394,12 @@ export default function App() {
             className={`p-1 rounded-full flex items-center shadow-xs border transition-colors ${
               isDark
                 ? 'bg-[#131c27] border-[#2f4157]'
-                : 'bg-white border-slate-300/90 shadow-2xs'
+                : 'bg-white border-slate-300'
             }`}
           >
             <button
               onClick={() => setViewTab('clock')}
-              className={`px-3.5 max-[380px]:px-2.5 sm:px-5 py-1 sm:py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 transition-all ${
+              className={`px-3.5 max-[380px]:px-2.5 sm:px-5 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 transition-all ${
                 viewTab === 'clock'
                   ? isDark
                     ? 'bg-amber-500 text-slate-950 font-black shadow-md ring-1 ring-amber-400'
@@ -392,7 +414,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setViewTab('map')}
-              className={`px-3.5 max-[380px]:px-2.5 sm:px-5 py-1 sm:py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 transition-all ${
+              className={`px-3.5 max-[380px]:px-2.5 sm:px-5 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 transition-all ${
                 viewTab === 'map'
                   ? isDark
                     ? 'bg-amber-500 text-slate-950 font-black shadow-md ring-1 ring-amber-400'
@@ -412,10 +434,10 @@ export default function App() {
             onClick={() => setIsSettingsOpen(true)}
             title={t.settings}
             aria-label={t.settingsLabel}
-            className={`h-9 w-9 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border shadow-xs text-sm font-bold transition-transform active:scale-95 ${
+            className={`h-10 w-10 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border text-sm font-bold transition-colors ${
               isDark
                 ? 'bg-[#131c27] border-[#2f4157] text-slate-300 hover:text-white hover:bg-slate-800'
-                : 'bg-white border-slate-300 text-slate-700 hover:text-slate-950 hover:bg-slate-50'
+                : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
             }`}
           >
             <Settings className="w-4 h-4" />
@@ -423,74 +445,55 @@ export default function App() {
           </button>
         </div>
 
-        {/* Top Right: [Sliding Language | Sliding Label Mode | Sliding Theme | Sound | Fullscreen] */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
-          {/* Sliding Language Toggle: EN / ID */}
-          <div
-            className={`h-9 p-1 rounded-full grid grid-cols-2 relative border shadow-xs select-none transition-colors ${
-              isDark ? 'bg-[#131c27] border-[#2f4157]' : 'bg-slate-200 border-slate-400/70'
-            }`}
-            style={{ width: '84px' }}
-            title={lang === 'id' ? 'Bahasa Indonesia (Klik untuk EN)' : 'English (Click for ID)'}
-          >
-            <div
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-all duration-300 ease-out shadow-xs pointer-events-none ${isDark ? 'bg-amber-500' : 'bg-amber-600'} ${
-                lang === 'id' ? 'left-[calc(50%+2px)]' : 'left-1'
-              }`}
-            />
-            <button
-              type="button"
-              onClick={() => setLang('en')}
-              className={`relative z-10 py-1 rounded-full text-sm font-black transition-colors duration-200 text-center flex items-center justify-center ${
-                lang === 'en' ? (isDark ? 'text-slate-950' : 'text-white') : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-700 hover:text-slate-950'
-              }`}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              onClick={() => setLang('id')}
-              className={`relative z-10 py-1 rounded-full text-sm font-black transition-colors duration-200 text-center flex items-center justify-center ${
-                lang === 'id' ? (isDark ? 'text-slate-950' : 'text-white') : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-700 hover:text-slate-950'
-              }`}
-            >
-              ID
-            </button>
-          </div>
+        {/* Top Right: language | theme | help | author — all 40px high so they line up */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <SegmentedToggle<Language>
+            ariaLabel="Language"
+            isDark={isDark}
+            value={lang}
+            onChange={setLang}
+            options={[
+              { value: 'en', label: 'EN', title: 'English' },
+              { value: 'id', label: 'ID', title: 'Bahasa Indonesia' },
+            ]}
+          />
 
-          {/* Sliding Dark / Light Mode Switch */}
-          <div
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            title={theme === 'dark' ? t.themeToLight : t.themeToDark}
-            className={`h-9 w-18 p-1 rounded-full relative border shadow-xs cursor-pointer select-none transition-colors flex items-center justify-between px-2 ${
-              isDark ? 'bg-[#131c27] border-[#2f4157]' : 'bg-white border-slate-400/70'
+          <SegmentedToggle<ThemeMode>
+            ariaLabel={t.theme}
+            isDark={isDark}
+            value={theme}
+            onChange={setTheme}
+            options={[
+              { value: 'light', label: <Sun className="w-4 h-4" />, title: t.lightTheme },
+              { value: 'dark', label: <Moon className="w-4 h-4" />, title: t.darkTheme },
+            ]}
+          />
+
+          <button
+            type="button"
+            onClick={() => setIsHelpOpen(true)}
+            title={t.help}
+            aria-label={t.help}
+            className={`h-10 w-10 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border text-sm font-bold transition-colors ${
+              isDark
+                ? 'bg-[#131c27] border-[#2f4157] text-slate-200 hover:bg-slate-800'
+                : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
             }`}
           >
-            <Sun className={`w-3.5 h-3.5 transition-opacity duration-200 ${isDark ? 'opacity-50 text-amber-400' : 'opacity-0'}`} />
-            <Moon className={`w-3.5 h-3.5 transition-opacity duration-200 ${!isDark ? 'opacity-70 text-slate-600' : 'opacity-0'}`} />
+            <CircleHelp className={`w-4 h-4 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
+            <span className="hidden sm:inline">{t.help}</span>
+          </button>
 
-            <div
-              className={`absolute top-1 bottom-1 w-7 rounded-full flex items-center justify-center shadow-md transition-transform duration-300 ease-out ${
-                isDark
-                  ? 'translate-x-[34px] bg-[#192432] text-amber-300 border border-slate-700'
-                  : 'translate-x-0 bg-amber-600 text-white border border-amber-600'
-              }`}
-            >
-              {isDark ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
-            </div>
-          </div>
-
-          {/* Author link */}
           <a
             href="https://affandymurad.github.io/"
             target="_blank"
             rel="noopener noreferrer"
             title={t.createdBy}
-            aria-label={`${t.createdBy}`}
-            className={`h-9 min-w-9 px-0 sm:px-3.5 rounded-full flex items-center justify-center gap-2 border shadow-xs text-sm font-bold transition-colors ${
+            aria-label={t.createdBy}
+            className={`h-10 w-10 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border text-sm font-bold transition-colors ${
               isDark
                 ? 'bg-[#131c27] border-[#2f4157] text-slate-200 hover:bg-slate-800'
-                : 'bg-white border-slate-400/70 text-slate-800 hover:bg-slate-200'
+                : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
             }`}
           >
             <UserRound className={`w-4 h-4 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
@@ -601,6 +604,7 @@ export default function App() {
                       timeDetails={details}
                       isHome={isHome}
                       canDelete={cities.length > 1}
+                      entering={city.id === enteringId}
                       totalCityColumns={Math.max(16, ...cities.map((c) => getCityName(c, lang).length))}
                       theme={theme}
                       dotColor={dotColor}
@@ -661,6 +665,9 @@ export default function App() {
         mode="pickHome"
         homeCityId={homeCity.id}
       />
+
+      {/* 1c. Help / how to use */}
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} theme={theme} lang={lang} />
 
       {/* 2. Settings Modal */}
       <SettingsModal

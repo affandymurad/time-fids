@@ -5,6 +5,7 @@ import { CountryFlag } from './CountryFlag';
 import { getTimeZoneAbbr } from '../utils/timeZones';
 import { AddToCalendarMenu } from './AddToCalendarMenu';
 import { CalendarEvent } from '../utils/calendar';
+import { playRemoveSound } from '../utils/audio';
 import { TRANSLATIONS, getCityName, getCountryName, getTimeZoneName } from '../utils/i18n';
 import wikipediaLogo from '../assets/wikipedia-logo.svg';
 import { Home, Trash2, Moon, Briefcase, Globe2, Sun, Building2, Clock } from 'lucide-react';
@@ -95,6 +96,8 @@ interface FidsBoardRowProps {
   eventDate: Date;
   /** Render without its own card (used inside the Current Time section). */
   embedded?: boolean;
+  /** True for a row that was just added (plays the enter animation). */
+  entering?: boolean;
   onSetHome: (city: City) => void;
   onRemoveCity: (cityId: string) => void;
 }
@@ -113,6 +116,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
   lang,
   eventDate,
   embedded = false,
+  entering = false,
   onSetHome,
   onRemoveCity,
 }) => {
@@ -146,6 +150,31 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
   const labelPadded = textToDisplay.padEnd(Math.max(totalCityColumns, textToDisplay.length), ' ');
 
   const isDark = theme === 'dark';
+
+  // Delete: play a soft sound and collapse the row before it is removed
+  const rootRef = useRef<HTMLDivElement>(null);
+  const handleDelete = () => {
+    if (!canDelete) return;
+    if (soundEnabled) playRemoveSound();
+    const el = rootRef.current;
+    if (!el || embedded || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      onRemoveCity(city.id);
+      return;
+    }
+    el.style.height = `${el.offsetHeight}px`;
+    el.style.overflow = 'hidden';
+    void el.offsetHeight; // force reflow so the transition starts from the current height
+    el.style.transition = 'height 0.3s ease, opacity 0.25s ease, transform 0.3s ease, margin 0.3s ease, padding 0.3s ease, border-width 0.3s ease';
+    el.style.height = '0px';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(28px)';
+    el.style.marginTop = '0px';
+    el.style.marginBottom = '0px';
+    el.style.paddingTop = '0px';
+    el.style.paddingBottom = '0px';
+    el.style.borderWidth = '0px';
+    window.setTimeout(() => onRemoveCity(city.id), 300);
+  };
   const isWide = useMediaQuery('(min-width: 640px)');
 
   // Calendar event for the moment currently shown on the board (1 hour long)
@@ -262,7 +291,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
 
           {/* ALWAYS VISIBLE SEPARATED DELETE BUTTON */}
           <button
-            onClick={() => canDelete && onRemoveCity(city.id)}
+            onClick={handleDelete}
             disabled={!canDelete}
             title={
               !canDelete
@@ -284,14 +313,15 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
 
   return (
     <div
-      className={embedded ? 'group relative pt-1' : `group relative rounded-xl transition-all duration-200 px-3 py-2.5 sm:px-4 sm:py-3 border ${
+      ref={rootRef}
+      className={embedded ? 'group relative pt-1' : `row-card group relative rounded-2xl transition-colors duration-200 px-3.5 py-3 sm:px-5 sm:py-3.5 border ${entering ? 'animate-row-in ' : ''}${
         isHome
           ? isDark
             ? 'bg-[#131c27]/90 hover:bg-[#192432] border-emerald-700/70 ring-1 ring-emerald-600/30 shadow-md'
-            : 'bg-white hover:bg-white border-emerald-500/70 ring-1 ring-emerald-500/30 shadow-xs'
+            : 'bg-white hover:bg-white border-emerald-400/70 ring-1 ring-emerald-500/20'
           : isDark
           ? 'bg-[#131c27]/90 hover:bg-[#192432] border-[#2f4157] shadow-md'
-          : 'bg-white/85 hover:bg-white border-slate-300/80 shadow-xs'
+          : 'bg-white hover:bg-white border-slate-300/80'
       }`}
     >
       {isWide ? (
@@ -325,7 +355,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
       {/* Expanded details bar (Toggled on click) */}
       {showDetails && (
         <div
-          className={`mt-2.5 pt-2.5 border-t text-sm flex flex-wrap items-center justify-between gap-3 ${
+          className={`mt-3 pt-3 border-t text-[15px] leading-relaxed flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 ${
             isDark ? "border-slate-700 text-slate-200" : "border-slate-300 text-slate-800"
           }`}
         >

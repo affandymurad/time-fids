@@ -77,3 +77,35 @@ export function playFlipSound(volume = 0.15) {
     // Ignore audio autoplay restrictions gracefully
   }
 }
+
+/** Short two-note cue: rising = city added, falling = city removed. Soft sine tones, very quiet. */
+function playBlips(notes: number[], volume: number) {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t0 + i * 0.075);
+      gain.gain.setValueAtTime(0.0001, t0 + i * 0.075);
+      gain.gain.exponentialRampToValueAtTime(volume, t0 + i * 0.075 + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.075 + 0.14);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0 + i * 0.075);
+      osc.stop(t0 + i * 0.075 + 0.16);
+    });
+  } catch {
+    // audio is optional
+  }
+}
+
+export function playAddSound(volume = 0.09) {
+  playBlips([523.25, 783.99], volume); // C5 -> G5
+}
+
+export function playRemoveSound(volume = 0.09) {
+  playBlips([587.33, 392.0], volume); // D5 -> G4
+}
