@@ -172,11 +172,11 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, theme, la
         aria-modal="true"
         aria-label={c.title}
         className={`w-full max-w-xl rounded-2xl shadow-2xl border flex flex-col max-h-[90vh] overflow-hidden ${
-          isDark ? 'bg-[#131c27] border-[#2f4157] text-white' : 'bg-white border-slate-300 text-slate-900'
+          isDark ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-white' : 'bg-white border-slate-300 text-slate-900'
         }`}
       >
         {/* Title */}
-        <div className={`px-5 py-4 border-b flex items-center justify-between ${isDark ? 'border-[#2f4157]' : 'border-slate-300'}`}>
+        <div className={`px-5 py-4 border-b flex items-center justify-between ${isDark ? 'border-[color:var(--line)]' : 'border-slate-300'}`}>
           <h2 className="text-lg font-bold">{c.title}</h2>
           <button
             onClick={onClose}
@@ -198,7 +198,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, theme, la
                 <li key={i} className="flex gap-3">
                   <span
                     className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
-                      isDark ? 'bg-[#192432] text-amber-300 border border-[#2f4157]' : 'bg-slate-100 text-amber-700 border border-slate-300'
+                      isDark ? 'bg-[color:var(--surface-2)] text-amber-300 border border-[color:var(--line)]' : 'bg-slate-100 text-amber-700 border border-slate-300'
                     }`}
                   >
                     {s.icon}
@@ -218,7 +218,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, theme, la
             <h3 className="text-sm font-bold uppercase tracking-wider mb-2.5">{c.termsTitle}</h3>
             <dl className="space-y-2">
               {c.terms.map((t) => (
-                <div key={t.term} className={`rounded-xl px-3.5 py-2.5 border ${isDark ? 'bg-[#192432] border-[#2f4157]' : 'bg-slate-50 border-slate-300'}`}>
+                <div key={t.term} className={`rounded-xl px-3.5 py-2.5 border ${isDark ? 'bg-[color:var(--surface-2)] border-[color:var(--line)]' : 'bg-slate-50 border-slate-300'}`}>
                   <dt className="font-bold">{t.term}</dt>
                   <dd className={muted}>{t.text}</dd>
                 </div>
@@ -229,7 +229,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, theme, la
           <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{c.privacy}</p>
         </div>
 
-        <div className={`px-5 py-3.5 border-t flex justify-end ${isDark ? 'border-[#2f4157]' : 'border-slate-300'}`}>
+        <div className={`px-5 py-3.5 border-t flex justify-end ${isDark ? 'border-[color:var(--line)]' : 'border-slate-300'}`}>
           <button
             onClick={onClose}
             className={`px-5 py-2 text-sm font-bold rounded-xl ${

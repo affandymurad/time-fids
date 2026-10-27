@@ -71,7 +71,7 @@ export const AddToCalendarMenu: React.FC<AddToCalendarMenuProps> = ({
         <div
           role="menu"
           className={`absolute right-0 ${dropUp ? 'bottom-full mb-2' : 'top-full mt-2'} z-50 w-56 p-1.5 rounded-xl border shadow-xl ${
-            isDark ? 'bg-[#192432] border-[#2f4157]' : 'bg-white border-slate-400/70'
+            isDark ? 'bg-[color:var(--surface-2)] border-[color:var(--line)]' : 'bg-white border-slate-400/70'
           }`}
         >
           <div

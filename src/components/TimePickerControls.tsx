@@ -83,7 +83,7 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
 
   const outlineBtn = `px-3.5 py-1.5 rounded-xl text-sm font-bold flex items-center gap-1.5 border transition-all ${
     isDark
-      ? 'bg-[#192432] hover:bg-[#233246] text-slate-200 border-[#2f4157]'
+      ? 'bg-[color:var(--surface-2)] hover:bg-[color:var(--surface-3)] text-slate-200 border-[color:var(--line)]'
       : 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-400/70'
   }`;
   const solidBtn = `px-3.5 py-1.5 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all shadow-xs ${
@@ -91,14 +91,14 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
   }`;
   const presetBtn = `px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors ${
     isDark
-      ? 'bg-[#192432] border-[#2f4157] text-slate-200 hover:bg-[#233246]'
+      ? 'bg-[color:var(--surface-2)] border-[color:var(--line)] text-slate-200 hover:bg-[color:var(--surface-3)]'
       : 'bg-slate-100 border-slate-300 text-slate-800 hover:bg-slate-200'
   }`;
 
   return (
     <div
       className={`rounded-2xl border p-3.5 sm:p-4 ${
-        isDark ? 'bg-[#131c27] border-[#1e2b3b] text-white shadow-xl' : 'bg-white border-slate-300 text-slate-900 shadow-sm'
+        isDark ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-white shadow-xl' : 'bg-white border-slate-300 text-slate-900 shadow-sm'
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -157,7 +157,7 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
       </div>
 
       {homeRow && (
-        <div className={`mt-3 pt-3 border-t ${isDark ? 'border-[#2f4157]' : 'border-slate-300'}`}>
+        <div className={`mt-3 pt-3 border-t ${isDark ? 'border-[color:var(--line)]' : 'border-slate-300'}`}>
           {/* Date header for the time shown below (same look as the date headers in the list) */}
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 mb-1.5">
             <span
@@ -185,7 +185,7 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
       )}
 
       {isOpen && (
-        <div className={`mt-3.5 pt-3.5 border-t space-y-3 ${isDark ? 'border-[#2f4157]' : 'border-slate-300'}`}>
+        <div className={`mt-3.5 pt-3.5 border-t space-y-3 ${isDark ? 'border-[color:var(--line)]' : 'border-slate-300'}`}>
           <label className="block">
             <span className={`block text-sm font-bold mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
               {t.pickLabel}
@@ -197,7 +197,7 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
               style={{ colorScheme: isDark ? 'dark' : 'light' }}
               className={`w-full sm:w-auto min-w-[16rem] rounded-xl border px-3 py-2.5 text-base font-semibold ${
                 isDark
-                  ? 'bg-[#192432] border-[#2f4157] text-white'
+                  ? 'bg-[color:var(--surface-2)] border-[color:var(--line)] text-white'
                   : 'bg-slate-50 border-slate-400/70 text-slate-900'
               }`}
             />

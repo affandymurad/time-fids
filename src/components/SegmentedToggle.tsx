@@ -34,7 +34,7 @@ export function SegmentedToggle<T extends string>({
       aria-label={ariaLabel}
       style={{ width: 92 }}
       className={`relative h-10 shrink-0 rounded-full grid grid-cols-2 border select-none ${
-        isDark ? 'bg-[#131c27] border-[#2f4157]' : 'bg-white border-slate-300'
+        isDark ? 'bg-[color:var(--surface)] border-[color:var(--line)]' : 'bg-white border-slate-300'
       }`}
     >
       {/* Sliding highlight: left edge + width match the grid columns exactly */}

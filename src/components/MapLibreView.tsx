@@ -114,20 +114,20 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
 
       el.innerHTML = `
         <div class="flex flex-col items-center">
-          <div class="px-2.5 py-1 rounded-lg text-sm font-mono font-bold shadow-md border flex items-center gap-1.5 whitespace-nowrap transition-colors duration-150 group-hover:border-amber-400 group-hover:ring-2 group-hover:ring-amber-400/60 ${
+          <div class="px-2.5 py-1 rounded-lg text-sm font-mono font-bold shadow-md border flex items-center gap-1.5 whitespace-nowrap transition-colors duration-150 group-hover:border-[color:var(--ink)] group-hover:ring-2 group-hover:ring-[color:var(--ink)]/40 ${
             isHome
-              ? 'bg-amber-500 text-slate-950 border-amber-300 ring-2 ring-amber-400/50'
+              ? 'bg-[color:var(--ink)] text-[color:var(--page-bg)] border-[color:var(--ink)] ring-2 ring-[color:var(--ink)]/35'
               : isSelected
-              ? 'bg-amber-500 text-slate-950 border-amber-300 ring-2 ring-amber-400/50'
+              ? 'bg-[color:var(--ink)] text-[color:var(--page-bg)] border-[color:var(--ink)] ring-2 ring-[color:var(--ink)]/35'
               : isDark
-              ? 'bg-[#131c27] text-white border-[#2f4157]'
+              ? 'bg-[color:var(--surface-2)] text-white border-[color:var(--ink)]/40'
               : 'bg-white text-slate-900 border-slate-300'
           }">
             <span class="w-4.5 h-3 overflow-hidden rounded-xs border border-black/20 inline-flex items-center justify-center shrink-0 shadow-2xs">${getCountryFlagSvgString(flagCode)}</span>
             <span class="font-sans font-bold tracking-tight">${labelText}</span>
             <span class="px-1.5 py-0.5 rounded font-mono ${
               isHome
-                ? 'bg-amber-600/30 text-slate-950 font-bold'
+                ? 'bg-[color:var(--page-bg)]/25 text-[color:var(--page-bg)] font-bold'
                 : isDark
                 ? 'bg-slate-800 text-amber-400'
                 : 'bg-slate-100 text-slate-900 font-bold'
@@ -135,11 +135,11 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
           </div>
           <div class="w-2.5 h-2.5 rotate-45 -mt-1.5 border-r border-b ${
             isHome
-              ? 'bg-amber-500 border-amber-300'
+              ? 'bg-[color:var(--ink)] border-[color:var(--ink)]'
               : isSelected
-              ? 'bg-amber-500 border-amber-300'
+              ? 'bg-[color:var(--ink)] border-[color:var(--ink)]'
               : isDark
-              ? 'bg-[#131c27] border-[#2f4157]'
+              ? 'bg-[color:var(--surface-2)] border-[color:var(--ink)]/40'
               : 'bg-white border-slate-300'
           }"></div>
         </div>
@@ -193,7 +193,7 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
   return (
     <div
       className={`rounded-2xl border p-3 sm:p-5 transition-all shadow-xl relative overflow-hidden flex flex-col ${
-        isDark ? 'bg-[#131c27] border-[#2f4157]' : 'bg-white border-slate-200'
+        isDark ? 'bg-[color:var(--surface)] border-[color:var(--line)]' : 'bg-white border-slate-200'
       }`}
     >
       {/* Top Header over Map */}
@@ -216,7 +216,7 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
         <div className="flex items-center gap-2">
           <div
             className={`px-3 py-1.5 rounded-xl border text-sm flex items-center gap-2 ${
-              isDark ? 'bg-[#1e2b3b] border-slate-700 text-white' : 'bg-slate-100 border-slate-200'
+              isDark ? 'bg-[var(--surface-3)] border-slate-700 text-white' : 'bg-slate-100 border-slate-200'
             }`}
           >
             <CountryFlag countryCode={selectedCity.countryCode} countryName={selectedCity.country} size="md" />
@@ -255,7 +255,7 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
             title={lang === 'id' ? 'Pusatkan ke Kota Saya' : 'Center on My City'}
             className={`p-2 rounded-lg border shadow-lg flex items-center justify-center transition-all ${
               isDark
-                ? 'bg-[#131c27]/90 hover:bg-[#192432] text-amber-400 border-slate-700'
+                ? 'bg-[color:var(--surface)]/90 hover:bg-[color:var(--surface-2)] text-amber-400 border-slate-700'
                 : 'bg-white hover:bg-slate-100 text-amber-600 border-slate-300'
             }`}
           >
@@ -270,7 +270,7 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
             title={lang === 'id' ? 'Perbesar' : 'Zoom in'}
             className={`p-2 rounded-t-lg border border-b-0 ${
               isDark
-                ? 'bg-[#131c27] hover:bg-slate-800 text-white border-slate-700'
+                ? 'bg-[color:var(--surface)] hover:bg-slate-800 text-white border-slate-700'
                 : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
             }`}
           >
@@ -281,7 +281,7 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
             title={lang === 'id' ? 'Perkecil' : 'Zoom out'}
             className={`p-2 rounded-b-lg border ${
               isDark
-                ? 'bg-[#131c27] hover:bg-slate-800 text-white border-slate-700'
+                ? 'bg-[color:var(--surface)] hover:bg-slate-800 text-white border-slate-700'
                 : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
             }`}
           >
@@ -293,7 +293,7 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
         <div
           className={`absolute bottom-3 left-3 px-3 py-1.5 rounded-lg text-sm font-mono border backdrop-blur-md shadow-md z-10 hidden sm:flex items-center gap-2 ${
             isDark
-              ? 'bg-[#131c27]/90 border-slate-800 text-slate-300'
+              ? 'bg-[color:var(--surface)]/90 border-slate-800 text-slate-300'
               : 'bg-white/90 border-slate-300 text-slate-700'
           }`}
         >

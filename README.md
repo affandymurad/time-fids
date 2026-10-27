@@ -15,7 +15,7 @@ deteksi DST, tampilan peta, dan dukungan Bahasa Indonesia / English.
 - **Peta dunia** — peta interaktif (MapLibre + OpenStreetMap) dengan marker jam lokal tiap kota.
 - **Tambah ke kalender** — Google Calendar, Apple / iCal (file `.ics`), Outlook.com, Office 365, dan Yahoo Calendar.
 - **Dua bahasa** — Indonesia dan English, termasuk nama negara dan nama zona waktu.
-- **Tema terang dan gelap** — palet biru pastel, dengan pilihan warna LED dot matrix di mode gelap.
+- **8 tema papan** — Midnight, Obsidian, Paper, Matcha, Lemon, Sky, Amber, dan Phosphor (empat gelap, empat terang). Seluruh tampilan, termasuk warna titik, ikut berganti. Pemilih tema dan palet warnanya terinspirasi dari [flapdot.com](https://flapdot.com/).
 - **Mode 24 jam / 12 jam** — di 12 jam, penanda `A` / `P` tampil terpisah setelah waktu.
 - **Responsif** — tata letak khusus untuk layar sempit (hingga sekitar 300 px).
 - **Tautan Wikipedia** per kota sesuai bahasa yang dipilih.

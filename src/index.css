@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tailwind dark: variant follows the selected palette mode (not the OS setting) */
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
 @layer utilities {
   /* Hide scrollbar for Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
@@ -114,19 +117,19 @@ header span {
 .theme-light .text-emerald-400 { color: var(--color-emerald-700); }
 .theme-light .text-rose-400 { color: var(--color-rose-600); }
 .theme-light .text-blue-400,
-.theme-light .text-blue-500 { color: #2f6aa3; }
+.theme-light .text-blue-500 { color: var(--p-ink); }
 .theme-light .border-slate-200 { border-color: var(--color-slate-300); }
 .theme-light .bg-slate-100 { background-color: var(--color-slate-200); }
-.theme-light .bg-slate-200 { background-color: #cfdcec; }
-.theme-light .border-slate-300 { border-color: #c4d2e3; }
+.theme-light .bg-slate-200 { background-color: color-mix(in srgb, var(--p-ink) 10%, var(--p-bg)); }
+.theme-light .border-slate-300 { border-color: var(--line); }
 .theme-light .border-slate-300\/80,
-.theme-light .border-slate-300\/90 { border-color: #c9d6e6; }
-.theme-light .border-slate-400\/70 { border-color: #b4c5d9; }
+.theme-light .border-slate-300\/90 { border-color: var(--line); }
+.theme-light .border-slate-400\/70 { border-color: color-mix(in srgb, var(--p-ink) 24%, var(--p-bg)); }
 .theme-light .border-amber-500 { border-color: var(--color-amber-600); }
 .theme-light .bg-amber-500\/15,
 .theme-light .bg-amber-500\/10,
-.theme-light .bg-amber-500\/20 { background-color: rgba(63, 111, 168, 0.16); }
-.theme-light .border-amber-500\/40 { border-color: rgba(63, 111, 168, 0.55); }
+.theme-light .bg-amber-500\/20 { background-color: color-mix(in srgb, var(--p-ink) 14%, transparent); }
+.theme-light .border-amber-500\/40 { border-color: color-mix(in srgb, var(--p-ink) 50%, transparent); }
 
 /* ---------- Row transitions ---------- */
 @keyframes rowIn {
@@ -143,3 +146,101 @@ header span {
 @media (prefers-reduced-motion: reduce) {
   .animate-row-in { animation: none; }
 }
+
+/* =====================================================================
+   Palettes (same eight boards as flapdot.com)
+   Each palette sets three inputs on <html data-palette="..." data-mode="...">:
+     --p-bg (board/page), --p-ink (lit dots + text), --p-off (unlit dots).
+   Everything else (surfaces, borders, the slate + accent scales used by
+   Tailwind utilities) is derived below, separately for light and dark.
+   ===================================================================== */
+:root[data-palette="midnight"] { --p-bg: #1b1b1b; --p-ink: #ffffff; --p-off: rgba(255,255,255,.13); }
+:root[data-palette="obsidian"] { --p-bg: #000000; --p-ink: #ffffff; --p-off: rgba(255,255,255,.18); }
+:root[data-palette="paper"] { --p-bg: #eaeaea; --p-ink: #111111; --p-off: rgba(0,0,0,.08); }
+:root[data-palette="matcha"] { --p-bg: #dde7cf; --p-ink: #24361a; --p-off: rgba(36,54,26,.10); }
+:root[data-palette="lemon"] { --p-bg: #f6f0b4; --p-ink: #2d2a12; --p-off: rgba(45,42,18,.09); }
+:root[data-palette="sky"] { --p-bg: #cfddf2; --p-ink: #14284a; --p-off: rgba(20,40,74,.10); }
+:root[data-palette="amber"] { --p-bg: #0e0b07; --p-ink: #ffb238; --p-off: rgba(255,178,56,.12); }
+:root[data-palette="phosphor"] { --p-bg: #050d07; --p-ink: #52f28a; --p-off: rgba(82,242,138,.11); }
+
+:root[data-mode="light"] {
+  --ink: var(--p-ink);
+  --page-bg: var(--p-bg);
+  --surface: color-mix(in srgb, var(--p-bg) 30%, #fff);
+  --surface-2: color-mix(in srgb, var(--p-bg) 55%, #fff);
+  --surface-3: var(--p-bg);
+  --line: color-mix(in srgb, var(--p-ink) 16%, var(--p-bg));
+  --line-2: color-mix(in srgb, var(--p-ink) 10%, var(--p-bg));
+  --dot-on: var(--p-ink);
+  --dot-off: var(--p-off);
+  --dot-glow: none;
+  --color-white: color-mix(in srgb, var(--p-bg) 30%, #fff);
+  --color-slate-50: color-mix(in srgb, var(--p-ink) 0%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-100: color-mix(in srgb, var(--p-ink) 6%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-200: color-mix(in srgb, var(--p-ink) 13%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-300: color-mix(in srgb, var(--p-ink) 24%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-400: color-mix(in srgb, var(--p-ink) 44%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-500: color-mix(in srgb, var(--p-ink) 58%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-600: color-mix(in srgb, var(--p-ink) 70%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-700: color-mix(in srgb, var(--p-ink) 80%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-800: color-mix(in srgb, var(--p-ink) 89%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-900: color-mix(in srgb, var(--p-ink) 95%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  --color-slate-950: color-mix(in srgb, var(--p-ink) 100%, color-mix(in srgb, var(--p-bg) 22%, #fff));
+  /* accent scale */
+  --color-amber-50: color-mix(in srgb, var(--p-bg) 40%, #fff);
+  --color-amber-100: var(--p-bg);
+  --color-amber-200: color-mix(in srgb, var(--p-ink) 14%, var(--p-bg));
+  --color-amber-300: color-mix(in srgb, var(--p-ink) 32%, var(--p-bg));
+  --color-amber-400: color-mix(in srgb, var(--p-ink) 55%, var(--p-bg));
+  --color-amber-500: color-mix(in srgb, var(--p-ink) 75%, var(--p-bg));
+  --color-amber-600: var(--p-ink);
+  --color-amber-900: var(--p-ink);
+  --color-blue-400: color-mix(in srgb, var(--p-ink) 70%, var(--p-bg));
+  --color-blue-500: color-mix(in srgb, var(--p-ink) 88%, var(--p-bg));
+  --color-indigo-400: color-mix(in srgb, var(--p-ink) 60%, var(--p-bg));
+  --color-indigo-500: color-mix(in srgb, var(--p-ink) 75%, var(--p-bg));
+  color-scheme: light;
+}
+
+:root[data-mode="dark"] {
+  --ink: var(--p-ink);
+  --page-bg: var(--p-bg);
+  --surface: var(--p-bg);
+  --surface-2: color-mix(in srgb, var(--p-bg) 93%, var(--p-ink));
+  --surface-3: color-mix(in srgb, var(--p-bg) 88%, var(--p-ink));
+  --line: color-mix(in srgb, var(--p-bg) 80%, var(--p-ink));
+  --line-2: color-mix(in srgb, var(--p-bg) 88%, var(--p-ink));
+  --dot-on: var(--p-ink);
+  --dot-off: var(--p-off);
+  --dot-glow: drop-shadow(0 0 3px color-mix(in srgb, var(--p-ink) 45%, transparent));
+  --color-white: color-mix(in srgb, var(--p-ink) 70%, #fff);
+  --color-slate-50: color-mix(in srgb, var(--p-bg) 0%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-100: color-mix(in srgb, var(--p-bg) 6%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-200: color-mix(in srgb, var(--p-bg) 13%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-300: color-mix(in srgb, var(--p-bg) 24%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-400: color-mix(in srgb, var(--p-bg) 44%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-500: color-mix(in srgb, var(--p-bg) 58%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-600: color-mix(in srgb, var(--p-bg) 70%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-700: color-mix(in srgb, var(--p-bg) 80%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-800: color-mix(in srgb, var(--p-bg) 89%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-900: color-mix(in srgb, var(--p-bg) 95%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  --color-slate-950: color-mix(in srgb, var(--p-bg) 100%, color-mix(in srgb, var(--p-ink) 86%, #fff));
+  /* accent scale */
+  --color-amber-300: color-mix(in srgb, var(--p-ink) 70%, #fff);
+  --color-amber-400: var(--p-ink);
+  --color-amber-500: var(--p-ink);
+  --color-amber-600: color-mix(in srgb, var(--p-ink) 85%, var(--p-bg));
+  --color-amber-900: color-mix(in srgb, var(--p-bg) 70%, var(--p-ink));
+  --color-blue-400: var(--p-ink);
+  --color-blue-500: color-mix(in srgb, var(--p-ink) 85%, var(--p-bg));
+  --color-indigo-400: color-mix(in srgb, var(--p-ink) 75%, var(--p-bg));
+  --color-indigo-500: color-mix(in srgb, var(--p-ink) 65%, var(--p-bg));
+  color-scheme: dark;
+}
+
+html, body { background: var(--page-bg, #cfddf2); }
+
+/* In light palettes the "amber" accent is a dark ink colour: keep text on solid accent fills readable */
+.theme-light .bg-amber-400.text-slate-950,
+.theme-light .bg-amber-500.text-slate-950,
+.theme-light .bg-amber-500\/90.text-slate-950 { color: var(--color-white); }

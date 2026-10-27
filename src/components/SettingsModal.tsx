@@ -1,15 +1,13 @@
 import React from 'react';
-import { ThemeMode, DotColor, BoardLabelMode, Language } from '../types';
+import { ThemeMode, BoardLabelMode, Language } from '../types';
+import { CountryFlag } from './CountryFlag';
 import { TRANSLATIONS } from '../utils/i18n';
-import { X, Volume2, VolumeX, Moon, Sun, Clock, RotateCcw, Palette, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Volume2, VolumeX, Clock, RotateCcw, Palette, Maximize2, Minimize2 } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   theme: ThemeMode;
-  onToggleTheme: () => void;
-  dotColor: DotColor;
-  onChangeDotColor: (color: DotColor) => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
   use24Hour: boolean;
@@ -27,9 +25,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   theme,
-  onToggleTheme,
-  dotColor,
-  onChangeDotColor,
   soundEnabled,
   onToggleSound,
   use24Hour,
@@ -52,7 +47,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       <div
         className={`w-full max-w-md rounded-2xl shadow-2xl border p-5 space-y-4 max-h-[90vh] overflow-y-auto ${
           isDark
-            ? 'bg-[#131c27] border-[#2f4157] text-white'
+            ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-white'
             : 'bg-white border-slate-200 text-slate-900'
         }`}
       >
@@ -84,7 +79,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   : 'border-slate-200 dark:border-slate-800 hover:bg-slate-800/40 text-slate-400'
               }`}
             >
-              <span>🇬🇧 English</span>
+              <CountryFlag countryCode="gb" countryName="English" size="md" />
+              <span>English</span>
             </button>
             <button
               type="button"
@@ -95,44 +91,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   : 'border-slate-200 dark:border-slate-800 hover:bg-slate-800/40 text-slate-400'
               }`}
             >
-              <span>🇮🇩 Bahasa Indonesia</span>
-            </button>
-          </div>
-        </div>
-
-        {/* 2. Theme: Light / Dark */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-            {t.theme}
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (theme !== 'light') onToggleTheme();
-              }}
-              className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 text-sm font-bold transition-all ${
-                theme === 'light'
-                  ? 'border-amber-500 bg-amber-500/10 text-slate-900 shadow-xs font-black'
-                  : 'border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400'
-              }`}
-            >
-              <Sun className="w-4 h-4 text-amber-500" />
-              <span>{t.lightTheme}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (theme !== 'dark') onToggleTheme();
-              }}
-              className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 text-sm font-bold transition-all ${
-                theme === 'dark'
-                  ? 'border-amber-500 bg-amber-500/15 text-amber-400 shadow-xs font-black'
-                  : 'border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              <Moon className="w-4 h-4 text-amber-400" />
-              <span>{t.darkTheme}</span>
+              <CountryFlag countryCode="id" countryName="Indonesia" size="md" />
+              <span>Bahasa Indonesia</span>
             </button>
           </div>
         </div>
@@ -168,42 +128,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
 
-        {/* 4. Dot Color LED (Dark mode) */}
-        {isDark && (
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-              {t.dotColorLed}
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { id: 'amber', label: t.dotPastelBlue, color: '#9fc8f2' },
-                { id: 'monochrome', label: t.dotClassicWhite, color: '#eaf1fa' },
-                { id: 'cyan', label: t.dotAeroCyan, color: '#74c4cc' },
-                { id: 'green', label: t.dotRadarGreen, color: '#72bf94' },
-              ].map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => onChangeDotColor(c.id as DotColor)}
-                  className={`p-2 rounded-xl border flex items-center gap-2.5 text-sm font-bold transition-all ${
-                    dotColor === c.id
-                      ? 'border-amber-500 bg-amber-500/15 text-white shadow-xs'
-                      : 'border-slate-800 hover:bg-slate-800/60 text-slate-400'
-                  }`}
-                >
-                  <span
-                    className="w-3.5 h-3.5 rounded-full shadow-xs shrink-0"
-                    style={{ backgroundColor: c.color }}
-                  />
-                  <span>{c.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* 5. Sound Effects */}
-        <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#192432]">
+        <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[color:var(--surface-2)]">
           <div className="flex items-center gap-2.5">
             {soundEnabled ? (
               <Volume2 className="w-5 h-5 text-amber-400" />
@@ -231,7 +157,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* 6. Time Format (24H vs 12H) */}
-        <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#192432]">
+        <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[color:var(--surface-2)]">
           <div className="flex items-center gap-2.5">
             <Clock className="w-5 h-5 text-amber-500" />
             <div>
@@ -251,7 +177,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* 7. Fullscreen */}
-        <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#192432]">
+        <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[color:var(--surface-2)]">
           <div className="flex items-center gap-2.5">
             {isFullscreen ? <Minimize2 className="w-5 h-5 text-amber-500" /> : <Maximize2 className="w-5 h-5 text-amber-500" />}
             <div>

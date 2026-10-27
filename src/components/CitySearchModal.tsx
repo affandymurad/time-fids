@@ -84,11 +84,11 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs">
       <div
         className={`w-full max-w-lg rounded-2xl shadow-2xl border flex flex-col max-h-[88vh] overflow-hidden ${
-          isDark ? 'bg-[#131c27] border-[#2f4157] text-white' : 'bg-white border-slate-300 text-slate-900'
+          isDark ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-white' : 'bg-white border-slate-300 text-slate-900'
         }`}
       >
         {/* Title */}
-        <div className={`px-4 py-3.5 border-b flex items-center justify-between ${isDark ? 'border-[#2f4157]' : 'border-slate-300'}`}>
+        <div className={`px-4 py-3.5 border-b flex items-center justify-between ${isDark ? 'border-[color:var(--line)]' : 'border-slate-300'}`}>
           <h2 className="text-lg font-bold">{pickHome ? t.pickHomeTitle : t.addCity}</h2>
           <button
             onClick={onClose}
@@ -106,7 +106,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
           <div
             className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border ${
               isDark
-                ? 'bg-[#192432] border-slate-700 focus-within:border-blue-400'
+                ? 'bg-[color:var(--surface-2)] border-slate-700 focus-within:border-blue-400'
                 : 'bg-slate-50 border-slate-400/70 focus-within:border-blue-600'
             }`}
           >
@@ -132,7 +132,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
             aria-label={t.regionLabel}
             style={{ colorScheme: isDark ? 'dark' : 'light' }}
             className={`w-full rounded-xl border px-3 py-2.5 text-base font-semibold ${
-              isDark ? 'bg-[#192432] border-slate-700 text-white' : 'bg-slate-50 border-slate-400/70 text-slate-900'
+              isDark ? 'bg-[color:var(--surface-2)] border-slate-700 text-white' : 'bg-slate-50 border-slate-400/70 text-slate-900'
             }`}
           >
             {regions.map((r) => (
@@ -179,7 +179,7 @@ export const CitySearchModal: React.FC<CitySearchModalProps> = ({
                   <div
                     key={city.id}
                     className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
-                      isDark ? 'bg-[#192432] border-[#2f4157]' : 'bg-white border-slate-300'
+                      isDark ? 'bg-[color:var(--surface-2)] border-[color:var(--line)]' : 'bg-white border-slate-300'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">

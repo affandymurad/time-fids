@@ -68,35 +68,10 @@ export const FidsDotCharacter: React.FC<FidsDotCharacterProps> = ({
 
   const matrix = getCharacterMatrix(displayChar);
 
-  // Colors depending on theme & dotColor preference
+  // Dot colours come from the active palette (CSS variables set on <html>)
   const isDark = theme === 'dark';
-
-  let activeFill = '#111215'; // Light mode active dots
-  let inactiveFill = '#d5dfec'; // Light mode inactive dots
-  let glowStyle = 'none';
-
-  if (isDark) {
-    inactiveFill = '#18232f'; // Very faint ghost dots in dark mode
-    switch (dotColor) {
-      case 'amber':
-        activeFill = '#9fc8f2';
-        glowStyle = 'drop-shadow(0 0 3px rgba(159, 200, 242, 0.4))';
-        break;
-      case 'cyan':
-        activeFill = '#74c4cc';
-        glowStyle = 'drop-shadow(0 0 3px rgba(116, 196, 204, 0.4))';
-        break;
-      case 'green':
-        activeFill = '#72bf94';
-        glowStyle = 'drop-shadow(0 0 3px rgba(114, 191, 148, 0.4))';
-        break;
-      case 'monochrome':
-      default:
-        activeFill = '#e6eef8';
-        glowStyle = 'drop-shadow(0 0 2px rgba(230, 238, 248, 0.3))';
-        break;
-    }
-  }
+  const activeFill = 'var(--dot-on)';
+  const inactiveFill = 'var(--dot-off)';
 
   return (
     <div
@@ -105,7 +80,7 @@ export const FidsDotCharacter: React.FC<FidsDotCharacterProps> = ({
       } ${className}`}
       style={{
         aspectRatio: '5 / 7',
-        filter: isDark ? glowStyle : 'none',
+        filter: 'var(--dot-glow, none)',
       }}
     >
       <svg
@@ -125,7 +100,7 @@ export const FidsDotCharacter: React.FC<FidsDotCharacterProps> = ({
                 cx={cx}
                 cy={cy}
                 r={isDotActive ? 4.2 : isDark ? 2.0 : 3.0}
-                fill={isDotActive ? activeFill : inactiveFill}
+                style={{ fill: isDotActive ? activeFill : inactiveFill }}
                 className="transition-colors duration-100"
               />
             );

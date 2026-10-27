@@ -9,6 +9,21 @@
     <meta property="og:description" content="Konverter Jam Dunia dengan animasi dot-matrix flip display, penyesuaian zona waktu, kalkulasi Daylight Saving Time (DST), dan mode gelap." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Apply the saved board palette before first paint (avoids a flash of the wrong theme)
+      (function () {
+        var dark = { midnight: 1, obsidian: 1, amber: 1, phosphor: 1 };
+        var p = 'sky';
+        try {
+          var s = localStorage.getItem('fids_world_time_palette_v4');
+          var ok = { midnight: 1, obsidian: 1, paper: 1, matcha: 1, lemon: 1, sky: 1, amber: 1, phosphor: 1 };
+          if (s && ok[s]) p = s;
+          else if (localStorage.getItem('fids_world_time_theme_v4') === 'dark') p = 'midnight';
+        } catch (e) {}
+        document.documentElement.dataset.palette = p;
+        document.documentElement.dataset.mode = dark[p] ? 'dark' : 'light';
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,300..900;1,300..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">

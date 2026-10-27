@@ -317,10 +317,10 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
       className={embedded ? 'group relative pt-1' : `row-card group relative rounded-2xl transition-colors duration-200 px-3.5 py-3 sm:px-5 sm:py-3.5 border ${entering ? 'animate-row-in ' : ''}${
         isHome
           ? isDark
-            ? 'bg-[#131c27]/90 hover:bg-[#192432] border-emerald-700/70 ring-1 ring-emerald-600/30 shadow-md'
+            ? 'bg-[color:var(--surface)]/90 hover:bg-[color:var(--surface-2)] border-emerald-700/70 ring-1 ring-emerald-600/30 shadow-md'
             : 'bg-white hover:bg-white border-emerald-400/70 ring-1 ring-emerald-500/20'
           : isDark
-          ? 'bg-[#131c27]/90 hover:bg-[#192432] border-[#2f4157] shadow-md'
+          ? 'bg-[color:var(--surface)]/90 hover:bg-[color:var(--surface-2)] border-[color:var(--line)] shadow-md'
           : 'bg-white hover:bg-white border-slate-300/80'
       }`}
     >
@@ -423,7 +423,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
                 onClick={() => onSetHome(city)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1.5 border transition-colors ${
                   isDark
-                    ? 'bg-[#192432] border-[#2f4157] text-slate-100 hover:bg-[#233246]'
+                    ? 'bg-[color:var(--surface-2)] border-[color:var(--line)] text-slate-100 hover:bg-[color:var(--surface-3)]'
                     : 'bg-white border-slate-400/70 text-slate-900 hover:bg-slate-200'
                 }`}
               >

@@ -16,6 +16,9 @@ import {
 import { TRANSLATIONS, getCityName } from './utils/i18n';
 import { playAddSound } from './utils/audio';
 import { SegmentedToggle } from './components/SegmentedToggle';
+import { CountryFlag } from './components/CountryFlag';
+import { PaletteSwitcher } from './components/PaletteSwitcher';
+import { PaletteId, getPalette, DEFAULT_PALETTE_LIGHT, DEFAULT_PALETTE_DARK } from './utils/palettes';
 import { HelpModal } from './components/HelpModal';
 import { FidsBoardRow } from './components/FidsBoardRow';
 import { TimePickerControls } from './components/TimePickerControls';
@@ -42,6 +45,7 @@ const STORAGE_KEYS = {
   CITIES: 'fids_world_time_cities_v4',
   HOME_CITY_ID: 'fids_world_time_home_id_v4',
   THEME: 'fids_world_time_theme_v4',
+  PALETTE: 'fids_world_time_palette_v4',
   DOT_COLOR: 'fids_world_time_dot_color_v4',
   SOUND: 'fids_world_time_sound_v4',
   USE_24H: 'fids_world_time_use_24h_v4',
@@ -101,25 +105,21 @@ export default function App() {
     return INITIAL_CITIES[0].id;
   });
 
-  const [theme, setTheme] = useState<ThemeMode>(() => {
+  // Board palette (same eight as flapdot.com). Light/dark mode is derived from it.
+  const [palette, setPalette] = useState<PaletteId>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.THEME);
-      if (saved === 'dark' || saved === 'light') return saved;
+      const saved = getPalette(localStorage.getItem(STORAGE_KEYS.PALETTE));
+      if (saved) return saved.id;
+      // migrate the old light/dark preference
+      if (localStorage.getItem(STORAGE_KEYS.THEME) === 'dark') return DEFAULT_PALETTE_DARK;
     } catch {
       // Fallback
     }
-    return 'light';
+    return DEFAULT_PALETTE_LIGHT;
   });
+  const theme: ThemeMode = getPalette(palette)?.mode ?? 'light';
+  const dotColor: DotColor = 'amber'; // legacy prop; dot colours now come from the palette
 
-  const [dotColor, setDotColor] = useState<DotColor>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.DOT_COLOR);
-      if (saved) return saved as DotColor;
-    } catch {
-      // Fallback
-    }
-    return 'amber'; // Default authentic airport amber LED
-  });
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     try {
@@ -191,21 +191,17 @@ export default function App() {
     }
   }, [homeCityId]);
 
+  // Save the palette and apply it to <html> (data-palette / data-mode drive the CSS variables)
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.THEME, theme);
+      localStorage.setItem(STORAGE_KEYS.PALETTE, palette);
     } catch (e) {
-      console.warn('Failed saving theme', e);
+      console.warn('Failed saving palette', e);
     }
-  }, [theme]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.DOT_COLOR, dotColor);
-    } catch (e) {
-      console.warn('Failed saving dot color', e);
-    }
-  }, [dotColor]);
+    const root = document.documentElement;
+    root.dataset.palette = palette;
+    root.dataset.mode = theme;
+  }, [palette, theme]);
 
   useEffect(() => {
     try {
@@ -383,7 +379,7 @@ export default function App() {
   return (
     <div
       className={`min-h-screen flex flex-col justify-between selection:bg-amber-500/30 transition-colors duration-300 font-sans ${
-        isDark ? 'bg-[#131c27] text-slate-100' : 'theme-light bg-[#eaf1fa] text-slate-900'
+        isDark ? 'bg-[color:var(--surface)] text-slate-100' : 'theme-light bg-[color:var(--page-bg)] text-slate-900'
       }`}
     >
       {/* ================= TOP CONTROLS BAR ================= */}
@@ -393,7 +389,7 @@ export default function App() {
           <div
             className={`p-1 rounded-full flex items-center shadow-xs border transition-colors ${
               isDark
-                ? 'bg-[#131c27] border-[#2f4157]'
+                ? 'bg-[color:var(--surface)] border-[color:var(--line)]'
                 : 'bg-white border-slate-300'
             }`}
           >
@@ -436,7 +432,7 @@ export default function App() {
             aria-label={t.settingsLabel}
             className={`h-10 w-10 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border text-sm font-bold transition-colors ${
               isDark
-                ? 'bg-[#131c27] border-[#2f4157] text-slate-300 hover:text-white hover:bg-slate-800'
+                ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-slate-300 hover:text-white hover:bg-slate-800'
                 : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
             }`}
           >
@@ -453,19 +449,8 @@ export default function App() {
             value={lang}
             onChange={setLang}
             options={[
-              { value: 'en', label: 'EN', title: 'English' },
-              { value: 'id', label: 'ID', title: 'Bahasa Indonesia' },
-            ]}
-          />
-
-          <SegmentedToggle<ThemeMode>
-            ariaLabel={t.theme}
-            isDark={isDark}
-            value={theme}
-            onChange={setTheme}
-            options={[
-              { value: 'light', label: <Sun className="w-4 h-4" />, title: t.lightTheme },
-              { value: 'dark', label: <Moon className="w-4 h-4" />, title: t.darkTheme },
+              { value: 'en', label: <CountryFlag countryCode="gb" countryName="English" size="md" />, title: 'English' },
+              { value: 'id', label: <CountryFlag countryCode="id" countryName="Indonesia" size="md" />, title: 'Bahasa Indonesia' },
             ]}
           />
 
@@ -476,7 +461,7 @@ export default function App() {
             aria-label={t.help}
             className={`h-10 w-10 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border text-sm font-bold transition-colors ${
               isDark
-                ? 'bg-[#131c27] border-[#2f4157] text-slate-200 hover:bg-slate-800'
+                ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-slate-200 hover:bg-slate-800'
                 : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
             }`}
           >
@@ -492,13 +477,15 @@ export default function App() {
             aria-label={t.createdBy}
             className={`h-10 w-10 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border text-sm font-bold transition-colors ${
               isDark
-                ? 'bg-[#131c27] border-[#2f4157] text-slate-200 hover:bg-slate-800'
+                ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-slate-200 hover:bg-slate-800'
                 : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
             }`}
           >
             <UserRound className={`w-4 h-4 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
             <span className="hidden sm:inline">Affandy Murad</span>
           </a>
+
+          <PaletteSwitcher value={palette} onChange={setPalette} lang={lang} ariaLabel={t.theme} />
         </div>
       </header>
 
@@ -561,14 +548,14 @@ export default function App() {
                   className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3.5 sm:px-4 py-2.5 rounded-xl border font-mono font-bold text-sm max-[420px]:text-xs sm:text-sm tracking-wider transition-all ${
                     group.badgeType === 'same'
                       ? isDark
-                        ? 'bg-[#131c27] text-amber-300 border-[#2f4157]'
+                        ? 'bg-[color:var(--surface)] text-amber-300 border-[color:var(--line)]'
                         : 'bg-slate-200/90 text-slate-800 border-slate-300'
                       : group.badgeType === 'next'
                       ? isDark
                         ? 'bg-emerald-950/60 text-emerald-300 border-emerald-900/80'
                         : 'bg-emerald-100 text-emerald-900 border-emerald-300'
                       : isDark
-                      ? 'bg-[#131c27] text-slate-300 border-slate-800'
+                      ? 'bg-[color:var(--surface)] text-slate-300 border-slate-800'
                       : 'bg-slate-100 text-slate-800 border-slate-300'
                   }`}
                 >
@@ -627,7 +614,7 @@ export default function App() {
                 onClick={() => setIsCitySearchOpen(true)}
                 className={`px-6 py-3 rounded-full text-sm sm:text-sm font-bold flex items-center gap-2 border shadow-lg transition-all hover:scale-105 active:scale-95 ${
                   isDark
-                    ? 'bg-[#131c27] border-[#2f4157] hover:bg-[#192432] text-white'
+                    ? 'bg-[color:var(--surface)] border-[color:var(--line)] hover:bg-[color:var(--surface-2)] text-white'
                     : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-800'
                 }`}
               >
@@ -674,9 +661,6 @@ export default function App() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         theme={theme}
-        onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        dotColor={dotColor}
-        onChangeDotColor={setDotColor}
         soundEnabled={soundEnabled}
         onToggleSound={() => setSoundEnabled(!soundEnabled)}
         use24Hour={use24Hour}
