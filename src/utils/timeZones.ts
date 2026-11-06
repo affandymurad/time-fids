@@ -2109,6 +2109,17 @@ export const RAW_CITIES: City[] = [
     "code": "YVR"
   },
   {
+    "id": "cranbrook",
+    "name": "CRANBROOK",
+    "country": "Canada",
+    "countryCode": "ca",
+    "continent": "america",
+    "timezone": "America/Edmonton",
+    "lat": 49.5097,
+    "lng": -115.7688,
+    "code": "YXC"
+  },
+  {
     "id": "phoenix",
     "name": "PHOENIX",
     "country": "United States",
