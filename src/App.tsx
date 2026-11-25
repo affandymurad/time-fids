@@ -39,7 +39,8 @@ import {
   Clock,
   Map as MapIcon,
   Calendar,
-} from 'lucide-react';
+  Compass,
+  } from 'lucide-react';
 
 const STORAGE_KEYS = {
   CITIES: 'fids_world_time_cities_v4',
@@ -382,115 +383,76 @@ export default function App() {
         isDark ? 'bg-[color:var(--surface)] text-slate-100' : 'theme-light bg-[color:var(--page-bg)] text-slate-900'
       }`}
     >
-      {/* ================= TOP CONTROLS BAR ================= */}
-      <header className="flex-wrap gap-y-3 w-full max-w-7xl 2xl:max-w-[1680px] 3xl:max-w-[2100px] mx-auto px-4 sm:px-8 2xl:px-14 pt-5 sm:pt-7 flex items-center justify-between z-20">
-        {/* Top Left: [Clock | Map] TOGGLE & Settings Gear */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <div
-            className={`p-1 rounded-full flex items-center shadow-xs border transition-colors ${
-              isDark
-                ? 'bg-[color:var(--surface)] border-[color:var(--line)]'
-                : 'bg-white border-slate-300'
-            }`}
-          >
-            <button
-              onClick={() => setViewTab('clock')}
-              className={`px-3.5 max-[380px]:px-2.5 sm:px-5 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 transition-all ${
-                viewTab === 'clock'
-                  ? isDark
-                    ? 'bg-amber-500 text-slate-950 font-black shadow-md ring-1 ring-amber-400'
-                    : 'bg-slate-950 text-white shadow-xs font-black'
-                  : isDark
-                  ? 'text-slate-400 hover:text-white'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
+      {/* ================= STICKY TOOLBAR ================= */}
+      <header className="app-toolbar">
+        <div className="w-full max-w-7xl 2xl:max-w-[1680px] 3xl:max-w-[2100px] mx-auto px-3 sm:px-8 2xl:px-14 py-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          {/* Left: view switch */}
+          <div className="tb-seg" role="group" aria-label="View">
+            <button type="button" aria-pressed={viewTab === 'clock'} onClick={() => setViewTab('clock')}>
               <Clock className="w-3.5 h-3.5 max-[380px]:hidden" />
               <span>{t.clock}</span>
             </button>
-            <button
-              onClick={() => setViewTab('map')}
-              className={`px-3.5 max-[380px]:px-2.5 sm:px-5 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 transition-all ${
-                viewTab === 'map'
-                  ? isDark
-                    ? 'bg-amber-500 text-slate-950 font-black shadow-md ring-1 ring-amber-400'
-                    : 'bg-slate-950 text-white shadow-xs font-black'
-                  : isDark
-                  ? 'text-slate-400 hover:text-white'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
+            <button type="button" aria-pressed={viewTab === 'map'} onClick={() => setViewTab('map')}>
               <MapIcon className="w-3.5 h-3.5 max-[380px]:hidden" />
               <span>{t.map}</span>
             </button>
           </div>
 
-          {/* Settings Gear Button */}
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            title={t.settings}
-            aria-label={t.settingsLabel}
-            className={`h-10 w-10 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border text-sm font-bold transition-colors ${
-              isDark
-                ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-slate-300 hover:text-white hover:bg-slate-800'
-                : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            <span className="hidden sm:inline">{t.settings}</span>
-          </button>
-        </div>
+          {/* Right: one primary action, everything else is a quiet icon */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button type="button" className="tb-btn primary" onClick={() => setIsCitySearchOpen(true)} title={t.addCity} aria-label={t.addCity}>
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">{t.addCity}</span>
+            </button>
 
-        {/* Top Right: language | theme | help | author — all 40px high so they line up */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          <SegmentedToggle<Language>
-            ariaLabel="Language"
-            isDark={isDark}
-            value={lang}
-            onChange={setLang}
-            options={[
-              { value: 'en', label: <CountryFlag countryCode="gb" countryName="English" size="md" />, title: 'English' },
-              { value: 'id', label: <CountryFlag countryCode="id" countryName="Indonesia" size="md" />, title: 'Bahasa Indonesia' },
-            ]}
-          />
+            <SegmentedToggle<Language>
+              ariaLabel="Language"
+              isDark={isDark}
+              value={lang}
+              onChange={setLang}
+              options={[
+                { value: 'en', label: <CountryFlag countryCode="gb" countryName="English" size="md" />, title: 'English' },
+                { value: 'id', label: <CountryFlag countryCode="id" countryName="Indonesia" size="md" />, title: 'Bahasa Indonesia' },
+              ]}
+            />
 
-          <button
-            type="button"
-            onClick={() => setIsHelpOpen(true)}
-            title={t.help}
-            aria-label={t.help}
-            className={`h-10 w-10 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border text-sm font-bold transition-colors ${
-              isDark
-                ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-slate-200 hover:bg-slate-800'
-                : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
-            }`}
-          >
-            <CircleHelp className={`w-4 h-4 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
-            <span className="hidden sm:inline">{t.help}</span>
-          </button>
+            <PaletteSwitcher value={palette} onChange={setPalette} lang={lang} ariaLabel={t.theme} />
 
-          <a
-            href="https://affandymurad.github.io/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title={t.createdBy}
-            aria-label={t.createdBy}
-            className={`h-10 w-10 sm:w-auto sm:px-3.5 gap-2 rounded-full flex items-center justify-center border text-sm font-bold transition-colors ${
-              isDark
-                ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-slate-200 hover:bg-slate-800'
-                : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
-            }`}
-          >
-            <UserRound className={`w-4 h-4 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
-            <span className="hidden sm:inline">Affandy Murad</span>
-          </a>
+            <a
+              href="https://affandymurad.github.io/2026/?country=ID"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tb-btn icon lg:!w-auto lg:!px-3"
+              title={lang === 'id' ? 'Kalender hari libur' : 'Holiday calendar'}
+              aria-label={lang === 'id' ? 'Kalender hari libur' : 'Holiday calendar'}
+            >
+              <Calendar className="w-4 h-4" />
+              <span className="hidden lg:inline">{lang === 'id' ? 'Kalender' : 'Calendar'}</span>
+            </a>
+            <a
+              href="https://affandymurad.github.io/megacity/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tb-btn icon lg:!w-auto lg:!px-3"
+              title={lang === 'id' ? 'Panduan perjalanan' : 'Travel guide'}
+              aria-label={lang === 'id' ? 'Panduan perjalanan' : 'Travel guide'}
+            >
+              <Compass className="w-4 h-4" />
+              <span className="hidden lg:inline">{lang === 'id' ? 'Wisata' : 'Travel'}</span>
+            </a>
 
-          <PaletteSwitcher value={palette} onChange={setPalette} lang={lang} ariaLabel={t.theme} />
+            <button type="button" className="tb-btn icon" onClick={() => setIsHelpOpen(true)} title={t.help} aria-label={t.help}>
+              <CircleHelp className="w-4 h-4" />
+            </button>
+            <button type="button" className="tb-btn icon" onClick={() => setIsSettingsOpen(true)} title={t.settings} aria-label={t.settingsLabel}>
+              <Settings className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </header>
 
       {/* ================= MAIN CONTENT AREA ================= */}
-      <main className="flex-1 w-full max-w-7xl 2xl:max-w-[1680px] 3xl:max-w-[2100px] mx-auto px-3 sm:px-8 2xl:px-14 py-4 sm:py-6 flex flex-col justify-start">
+      <main className="flex-1 w-full max-w-7xl 2xl:max-w-[1680px] 3xl:max-w-[2100px] mx-auto px-3 sm:px-8 2xl:px-14 py-4 sm:py-5 flex flex-col justify-start">
         {/* Time Picker Controls / Converter Drawer */}
         <div className="mb-4">
           <TimePickerControls
@@ -538,93 +500,62 @@ export default function App() {
             onSetHome={(city) => setHomeCityId(city.id)}
           />
         ) : (
-          /* ================= DATE-GROUPED FIDS BOARD VIEW ================= */
-          <div className="relative py-2 flex flex-col items-center justify-center space-y-5 w-full">
-            <p className={`text-sm text-center ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t.tapHint}</p>
-            {groupedCitiesByDate.map((group) => (
-              <div key={group.dateKey} className="w-full space-y-2">
-                {/* Date Group Header Banner */}
-                <div
-                  className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-3.5 sm:px-4 py-2.5 rounded-xl border font-mono font-bold text-sm max-[420px]:text-xs sm:text-sm tracking-wider transition-all ${
-                    group.badgeType === 'same'
-                      ? isDark
-                        ? 'bg-[color:var(--surface)] text-amber-300 border-[color:var(--line)]'
-                        : 'bg-slate-200/90 text-slate-800 border-slate-300'
-                      : group.badgeType === 'next'
-                      ? isDark
-                        ? 'bg-emerald-950/60 text-emerald-300 border-emerald-900/80'
-                        : 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                      : isDark
-                      ? 'bg-[color:var(--surface)] text-slate-300 border-slate-800'
-                      : 'bg-slate-100 text-slate-800 border-slate-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-amber-500 max-[420px]:hidden" />
-                    <span>{group.dateTitle}</span>
-                  </div>
-                  <span
-                    className={`px-3 py-0.5 rounded-full text-sm max-[420px]:text-xs sm:text-sm font-black tracking-wide uppercase whitespace-nowrap ${
-                      group.badgeType === 'same'
-                        ? isDark
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                          : 'bg-slate-300 text-slate-900'
-                        : group.badgeType === 'next'
-                        ? isDark
-                          ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40'
-                          : 'bg-emerald-200 text-emerald-900'
-                        : isDark
-                        ? 'bg-slate-800 text-slate-300 border border-slate-700'
-                        : 'bg-slate-200 text-slate-800'
-                    }`}
-                  >
-                    {group.dayBadge}
-                  </span>
-                </div>
-
-                {/* Cities in this date group */}
-                <div className="space-y-1.5 sm:space-y-2.5">
-                  {group.citiesWithDetails.map(({ city, details, isHome }) => (
-                    <FidsBoardRow
-                      key={city.id}
-                      city={city}
-                      timeDetails={details}
-                      isHome={isHome}
-                      canDelete={cities.length > 1}
-                      entering={city.id === enteringId}
-                      totalCityColumns={Math.max(16, ...cities.map((c) => getCityName(c, lang).length))}
-                      theme={theme}
-                      dotColor={dotColor}
-                      soundEnabled={soundEnabled}
-                      use24Hour={use24Hour}
-                      globalLabelMode={globalLabelMode}
-                      lang={lang}
-                      eventDate={currentDate}
-                      onSetHome={(c) => setHomeCityId(c.id)}
-                      onRemoveCity={handleRemoveCity}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {/* Quick Add City Button below the board */}
-            <div className="pt-2 pb-8 flex items-center justify-center">
-              <button
-                onClick={() => setIsCitySearchOpen(true)}
-                className={`px-6 py-3 rounded-full text-sm sm:text-sm font-bold flex items-center gap-2 border shadow-lg transition-all hover:scale-105 active:scale-95 ${
-                  isDark
-                    ? 'bg-[color:var(--surface)] border-[color:var(--line)] hover:bg-[color:var(--surface-2)] text-white'
-                    : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-800'
-                }`}
-              >
-                <Plus className="w-4.5 h-4.5 text-amber-500" />
-                <span>{t.addCity}</span>
-              </button>
+          /* ================= DATE-GROUPED FIDS BOARD VIEW (card grid) ================= */
+          <div className="w-full pt-2 pb-6 space-y-7">
+            <p className="text-sm opacity-70 px-1">{t.tapHint}</p>
+            <div className="grid gap-3 sm:gap-4 items-start grid-cols-[repeat(auto-fill,minmax(min(100%,400px),1fr))]">
+              {groupedCitiesByDate.flatMap((group) =>
+                group.citiesWithDetails.map(({ city, details, isHome }) => (
+                  <FidsBoardRow
+                    key={city.id}
+                    stacked
+                    caption={
+                      <>
+                        <span>{group.dateTitle}</span>
+                        <span className="chip">{group.dayBadge}</span>
+                      </>
+                    }
+                    city={city}
+                    timeDetails={details}
+                    isHome={isHome}
+                    canDelete={cities.length > 1}
+                    entering={city.id === enteringId}
+                    totalCityColumns={Math.max(16, ...cities.map((c) => getCityName(c, lang).length))}
+                    theme={theme}
+                    dotColor={dotColor}
+                    soundEnabled={soundEnabled}
+                    use24Hour={use24Hour}
+                    globalLabelMode={globalLabelMode}
+                    lang={lang}
+                    eventDate={currentDate}
+                    onSetHome={(c) => setHomeCityId(c.id)}
+                    onRemoveCity={handleRemoveCity}
+                  />
+                ))
+              )}
             </div>
+
+            <button type="button" className="add-tile" onClick={() => setIsCitySearchOpen(true)}>
+              <Plus className="w-4 h-4" />
+              <span>{t.addCity}</span>
+            </button>
           </div>
         )}
       </main>
+
+      <footer className="w-full max-w-7xl 2xl:max-w-[1680px] mx-auto px-4 sm:px-8 2xl:px-14 pb-8 text-sm opacity-70 flex flex-wrap items-center justify-between gap-2">
+        <span>World Time · FIDS</span>
+        <a
+          href="https://affandymurad.github.io/"
+          target="_blank"
+          rel="noopener noreferrer"
+          title={t.createdBy}
+          className="inline-flex items-center gap-1.5 hover:underline"
+        >
+          <UserRound className="w-3.5 h-3.5" />
+          Affandy Murad
+        </a>
+      </footer>
 
       {/* ================= MODALS ================= */}
       {/* 1. City Search & Add Modal */}

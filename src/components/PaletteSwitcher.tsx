@@ -68,7 +68,7 @@ export const PaletteSwitcher: React.FC<PaletteSwitcherProps> = ({ value, onChang
           setPopTop(e.currentTarget.getBoundingClientRect().bottom + 8);
           setOpen((o) => !o);
         }}
-        className="h-10 gap-2 px-3 rounded-full flex items-center border border-[color:var(--line)] bg-[color:var(--surface)] text-sm font-bold text-[color:var(--ink)] hover:border-[color:var(--ink)] transition-colors"
+        className="tb-btn !px-2.5 sm:!px-3"
       >
         <PaletteIcon className="w-4 h-4" />
         <span className="hidden sm:inline">{current.name[lang]}</span>

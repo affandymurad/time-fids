@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+// maplibre-gl v6 ships its worker as a separate module; hand Vite's URL for it to the library
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import { City, ThemeMode, TimeDetails, Language } from '../types';
 import { getTimeDetails } from '../utils/timeZones';
 import { getTimeZoneAbbr } from '../utils/timeZones';
 import { TRANSLATIONS } from '../utils/i18n';
 import { CountryFlag, getCountryFlagSvgString } from './CountryFlag';
-import { Home, Crosshair, ZoomIn, ZoomOut, Layers } from 'lucide-react';
+import { Home, Crosshair, Layers } from 'lucide-react';
 
 interface MapLibreViewProps {
   cities: City[];
@@ -19,6 +21,14 @@ interface MapLibreViewProps {
   onSetHome: (city: City) => void;
   onSelectCity?: (city: City) => void;
 }
+
+maplibregl.setWorkerUrl(workerUrl);
+
+// Same configuration as the Megacity page (OpenFreeMap Positron style, world view)
+const MAP_CONFIG = {
+  STYLE_URL: 'https://tiles.openfreemap.org/styles/positron',
+  WORLD_VIEW: { lat: 20.0, lng: 15.0, zoom: 2 },
+};
 
 export const MapLibreView: React.FC<MapLibreViewProps> = ({
   cities,
@@ -38,47 +48,90 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
   const isDark = theme === 'dark';
   const t = TRANSLATIONS[lang];
 
-  // 100% Free Public OpenStreetMap tile URL (NO API KEY REQUIRED)
-  const osmTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  // Same map setup as the Megacity page: OpenFreeMap "Positron" vector style,
+  // falling back to plain OpenStreetMap raster tiles if the style cannot be fetched.
+  const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
 
-  // Initialize MapLibre in clean 2D
   useEffect(() => {
     if (!mapContainerRef.current) return;
+    let cancelled = false;
+    let resizeObs: ResizeObserver | null = null;
 
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: {
-        version: 8,
-        sources: {
-          'osm-tiles': {
-            type: 'raster',
-            tiles: [osmTileUrl],
-            tileSize: 256,
-            attribution:
-              '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
-          },
+    const FALLBACK_STYLE: maplibregl.StyleSpecification = {
+      version: 8,
+      sources: {
+        osm: {
+          type: 'raster',
+          tileSize: 256,
+          maxzoom: 18,
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
         },
-        layers: [
-          {
-            id: 'osm-layer',
-            type: 'raster',
-            source: 'osm-tiles',
-            minzoom: 0,
-            maxzoom: 19,
-          },
-        ],
       },
-      center: [homeCity.lng, homeCity.lat],
-      zoom: 2.2,
-      pitch: 0,
-      bearing: 0,
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+    };
+
+    const pickStyle = () =>
+      fetch(MAP_CONFIG.STYLE_URL)
+        .then((r) => {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return { style: MAP_CONFIG.STYLE_URL as string | maplibregl.StyleSpecification, basic: false };
+        })
+        .catch(() => ({ style: FALLBACK_STYLE as string | maplibregl.StyleSpecification, basic: true }));
+
+    pickStyle().then(({ style, basic }) => {
+      if (cancelled || !mapContainerRef.current) return;
+      try {
+        const map = new maplibregl.Map({
+          container: mapContainerRef.current,
+          style,
+          center: [MAP_CONFIG.WORLD_VIEW.lng, MAP_CONFIG.WORLD_VIEW.lat],
+          zoom: MAP_CONFIG.WORLD_VIEW.zoom - 1,
+          maxZoom: basic ? 18 : 19,
+          pitch: 0,
+          maxPitch: 0,
+          attributionControl: false,
+        });
+        mapRef.current = map;
+
+        map.addControl(
+          new maplibregl.AttributionControl({
+            compact: true,
+            customAttribution: basic
+              ? ''
+              : '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">&copy; OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+          }),
+          'bottom-left'
+        );
+        map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: 'metric' }), 'bottom-left');
+        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+        map.addControl(
+          new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: false }),
+          'bottom-right'
+        );
+
+        if (typeof ResizeObserver !== 'undefined') {
+          resizeObs = new ResizeObserver(() => mapRef.current?.resize());
+          resizeObs.observe(mapContainerRef.current);
+        }
+        map.on('error', (ev) => {
+          const m = ev.error?.message ?? '';
+          if (/webgl|context/i.test(m)) setMapError(m);
+        });
+        setMapReady(true);
+      } catch (e) {
+        setMapError(e instanceof Error ? e.message : String(e));
+      }
     });
 
-    mapRef.current = map;
-
     return () => {
-      map.remove();
+      cancelled = true;
+      resizeObs?.disconnect();
+      mapRef.current?.remove();
       mapRef.current = null;
+      setMapReady(false);
     };
   }, []);
 
@@ -171,11 +224,7 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
 
       markersRef.current.push(marker);
     });
-  }, [cities, currentDate, homeCity, selectedCityId, theme, use24Hour, lang, globalLabelMode]);
-
-  // Zoom controls
-  const handleZoomIn = () => mapRef.current?.zoomIn();
-  const handleZoomOut = () => mapRef.current?.zoomOut();
+  }, [cities, currentDate, homeCity, selectedCityId, theme, use24Hour, lang, globalLabelMode, mapReady]);
 
   // Reset to Home City view
   const handleCenterHome = () => {
@@ -202,7 +251,7 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
           <Layers className="w-5 h-5 text-blue-500" />
           <div>
             <h3 className="font-bold text-sm sm:text-base">
-              {t.map} &bull; OpenStreetMap
+              {t.map} &bull; OpenFreeMap
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {lang === 'id'
@@ -246,6 +295,18 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
         }`}
       >
         <div ref={mapContainerRef} className="w-full h-full" />
+        {mapError && (
+          <div className="absolute inset-0 grid place-items-center p-6 text-center text-sm bg-[color:var(--surface)] text-[color:var(--ink)]">
+            <div>
+              <div className="font-semibold mb-1">{lang === 'id' ? 'Peta tidak dapat ditampilkan' : 'The map could not be shown'}</div>
+              <p className="opacity-70 max-w-[44ch]">
+                {lang === 'id'
+                  ? 'Peta memerlukan WebGL dan akses ke tile. Buka halaman ini langsung di Chrome/Firefox/Edge.'
+                  : 'The map needs WebGL and access to the tiles. Open this page directly in Chrome/Firefox/Edge.'}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Map Floating Controls (Top Right) */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
@@ -263,43 +324,6 @@ export const MapLibreView: React.FC<MapLibreViewProps> = ({
           </button>
         </div>
 
-        {/* Zoom Controls (Bottom Right) */}
-        <div className="absolute bottom-4 right-3 flex flex-col gap-1 z-10 shadow-lg">
-          <button
-            onClick={handleZoomIn}
-            title={lang === 'id' ? 'Perbesar' : 'Zoom in'}
-            className={`p-2 rounded-t-lg border border-b-0 ${
-              isDark
-                ? 'bg-[color:var(--surface)] hover:bg-slate-800 text-white border-slate-700'
-                : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
-            }`}
-          >
-            <ZoomIn className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleZoomOut}
-            title={lang === 'id' ? 'Perkecil' : 'Zoom out'}
-            className={`p-2 rounded-b-lg border ${
-              isDark
-                ? 'bg-[color:var(--surface)] hover:bg-slate-800 text-white border-slate-700'
-                : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
-            }`}
-          >
-            <ZoomOut className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Information pill (Bottom Left) */}
-        <div
-          className={`absolute bottom-3 left-3 px-3 py-1.5 rounded-lg text-sm font-mono border backdrop-blur-md shadow-md z-10 hidden sm:flex items-center gap-2 ${
-            isDark
-              ? 'bg-[color:var(--surface)]/90 border-slate-800 text-slate-300'
-              : 'bg-white/90 border-slate-300 text-slate-700'
-          }`}
-        >
-          <span>OpenStreetMap &bull; MapLibre</span>
-          <span className="hidden sm:inline">&bull; {lang === 'id' ? 'Klik penanda untuk info' : 'Click marker for info'}</span>
-        </div>
       </div>
     </div>
   );

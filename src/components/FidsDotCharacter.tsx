@@ -11,6 +11,8 @@ interface FidsDotCharacterProps {
   animateOnChange?: boolean;
   className?: string;
   dotRadius?: number;
+  /** Caps the character width in px (overrides the responsive default). */
+  maxWidth?: number;
 }
 
 const RANDOM_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -22,6 +24,7 @@ export const FidsDotCharacter: React.FC<FidsDotCharacterProps> = ({
   soundEnabled = false,
   animateOnChange = true,
   className = '',
+  maxWidth,
 }) => {
   const [displayChar, setDisplayChar] = useState(char.toUpperCase() || ' ');
   const [isFlipping, setIsFlipping] = useState(false);
@@ -81,6 +84,7 @@ export const FidsDotCharacter: React.FC<FidsDotCharacterProps> = ({
       style={{
         aspectRatio: '5 / 7',
         filter: 'var(--dot-glow, none)',
+        ...(maxWidth ? { maxWidth } : null),
       }}
     >
       <svg

@@ -98,6 +98,10 @@ interface FidsBoardRowProps {
   embedded?: boolean;
   /** True for a row that was just added (plays the enter animation). */
   entering?: boolean;
+  /** Compact card layout for the grid: time + actions on top, name below (regardless of screen width). */
+  stacked?: boolean;
+  /** Small date caption shown at the top of a stacked card. */
+  caption?: React.ReactNode;
   onSetHome: (city: City) => void;
   onRemoveCity: (cityId: string) => void;
 }
@@ -117,6 +121,8 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
   eventDate,
   embedded = false,
   entering = false,
+  stacked = false,
+  caption,
   onSetHome,
   onRemoveCity,
 }) => {
@@ -175,7 +181,8 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
     el.style.borderWidth = '0px';
     window.setTimeout(() => onRemoveCity(city.id), 300);
   };
-  const isWide = useMediaQuery('(min-width: 640px)');
+  const isWideScreen = useMediaQuery('(min-width: 640px)');
+  const isWide = isWideScreen && !stacked;
 
   // Calendar event for the moment currently shown on the board (1 hour long)
   const cityLabel = getCityName(city, lang);
@@ -201,7 +208,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
       <div className="flex items-center gap-0.5 sm:gap-1.5 flex-shrink-0">
         {timeChars.map((char, idx) => (
           <div key={`time-${idx}`}>
-            <FidsDotCharacter char={char} theme={theme} dotColor={dotColor} soundEnabled={soundEnabled} />
+            <FidsDotCharacter char={char} theme={theme} dotColor={dotColor} soundEnabled={soundEnabled} maxWidth={stacked ? 34 : undefined} />
           </div>
         ))}
       </div>
@@ -210,7 +217,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
         <>
           <div className="w-2 sm:w-4 flex-shrink-0" />
           <div className="flex items-center flex-shrink-0">
-            <FidsDotCharacter char={periodChar} theme={theme} dotColor={dotColor} soundEnabled={soundEnabled} />
+            <FidsDotCharacter char={periodChar} theme={theme} dotColor={dotColor} soundEnabled={soundEnabled} maxWidth={stacked ? 34 : undefined} />
           </div>
         </>
       )}
@@ -221,7 +228,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
     <div className="flex items-center gap-0.5 sm:gap-1.5 flex-shrink-0">
       {labelPadded.split('').map((char, idx) => (
         <div key={`label-${idx}`}>
-          <FidsDotCharacter char={char} theme={theme} dotColor={dotColor} soundEnabled={soundEnabled} />
+          <FidsDotCharacter char={char} theme={theme} dotColor={dotColor} soundEnabled={soundEnabled} maxWidth={stacked ? 19 : undefined} />
         </div>
       ))}
     </div>
@@ -274,6 +281,8 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
             </span>
           )}
 
+          {/* Secondary actions: quiet until the card is hovered/focused on desktop, always visible on touch */}
+          <div className={`flex items-center gap-1.5 sm:gap-2 ${embedded ? '' : 'row-actions'}`}>
           {/* Add this moment to a calendar (Google / Apple iCal / Outlook.com / Office 365 / Yahoo) */}
           <AddToCalendarMenu
             event={calendarEvent}
@@ -308,13 +317,14 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
           >
             <Trash2 className="w-4 h-4" />
           </button>
+          </div>
         </div>
   );
 
   return (
     <div
       ref={rootRef}
-      className={embedded ? 'group relative pt-1' : `row-card group relative rounded-2xl transition-colors duration-200 px-3.5 py-3 sm:px-5 sm:py-3.5 border ${entering ? 'animate-row-in ' : ''}${
+      className={embedded ? 'group relative pt-1' : `row-card group relative rounded-2xl transition-colors duration-200 px-3.5 py-3 sm:px-4 sm:py-3.5 border ${entering ? 'animate-row-in ' : ''}${
         isHome
           ? isDark
             ? 'bg-[color:var(--surface)]/90 hover:bg-[color:var(--surface-2)] border-emerald-700/70 ring-1 ring-emerald-600/30 shadow-md'
@@ -339,6 +349,7 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
       ) : (
         /* Narrow: time + action dock on top, full-width name line below */
         <div className="flex flex-col gap-2">
+          {caption && <div className="date-caption">{caption}</div>}
           <div className="flex items-center justify-between gap-3">
             <div className="cursor-pointer py-0.5" onClick={toggleDetails} title={rowTitle}>
               {timeEl}

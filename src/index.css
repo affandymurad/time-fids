@@ -240,7 +240,142 @@ header span {
 
 html, body { background: var(--page-bg, #cfddf2); }
 
+/* =====================================================================
+   Calm layout layer (easier on the eyes)
+   - lighter type weights: nothing shouts, hierarchy comes from size/colour
+   - frosted sticky toolbar, hairline borders, quieter secondary actions
+   ===================================================================== */
+.font-bold, .font-black { font-weight: 600; }
+
+html { scroll-padding-top: 76px; scroll-behavior: smooth; }
+
+.app-toolbar {
+  position: relative; /* phones: two wrapped rows would eat the screen, so only stick from 640px up */
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--page-bg) 78%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid var(--line-2);
+}
+
+@media (min-width: 640px) { .app-toolbar { position: sticky; } }
+
+/* Round 36px icon / pill controls shared by the toolbar */
+.tb-btn {
+  height: 36px;
+  min-width: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.tb-btn:hover { border-color: var(--ink); }
+.tb-btn.icon { padding: 0; width: 36px; }
+.tb-btn.primary { background: var(--ink); color: var(--page-bg); border-color: var(--ink); }
+.tb-btn.primary:hover { filter: brightness(1.12); }
+
+/* Segmented view switch (Clock | Map) */
+.tb-seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 6%, var(--page-bg));
+}
+.tb-seg button {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--ink) 70%, var(--page-bg));
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.tb-seg button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14), 0 0 0 0.5px var(--line);
+}
+
+/* Date caption inside each city card */
+.date-caption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 60%, var(--page-bg));
+}
+.date-caption .chip {
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+/* Section label above each date group (quiet, replaces the heavy banner) */
+.date-label {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0 4px 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 62%, var(--page-bg));
+}
+.date-label .chip {
+  padding: 1px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+.date-label::after { content: ""; flex: 1; height: 1px; background: var(--line-2); align-self: center; }
+
+/* Secondary row actions: revealed on hover/focus for mouse users, always visible on touch */
+@media (hover: hover) and (pointer: fine) {
+  .row-actions { opacity: 0; transition: opacity 0.15s ease; }
+  .group:hover .row-actions,
+  .group:focus-within .row-actions { opacity: 1; }
+}
+
+.add-tile {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 16px;
+  border: 1.5px dashed var(--line);
+  color: color-mix(in srgb, var(--ink) 70%, var(--page-bg));
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+.add-tile:hover { border-color: var(--ink); color: var(--ink); background: color-mix(in srgb, var(--ink) 4%, transparent); }
+
 /* In light palettes the "amber" accent is a dark ink colour: keep text on solid accent fills readable */
 .theme-light .bg-amber-400.text-slate-950,
 .theme-light .bg-amber-500.text-slate-950,
 .theme-light .bg-amber-500\/90.text-slate-950 { color: var(--color-white); }
+
+/* MapLibre controls inherit the app font (as on the Megacity map) */
+.maplibregl-map { font: inherit; }

@@ -81,11 +81,7 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
   const abbr = getTimeZoneAbbr(homeCity.timezone, homeCity.tzAbbr, currentDate, homeCity.countryCode);
   const cityName = titleCaseCity(getCityName(homeCity, lang));
 
-  const outlineBtn = `px-3.5 py-1.5 rounded-xl text-sm font-bold flex items-center gap-1.5 border transition-all ${
-    isDark
-      ? 'bg-[color:var(--surface-2)] hover:bg-[color:var(--surface-3)] text-slate-200 border-[color:var(--line)]'
-      : 'bg-slate-200 hover:bg-slate-300 text-slate-900 border-slate-400/70'
-  }`;
+  const outlineBtn = `px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5 border border-[color:var(--line)] bg-transparent hover:border-[color:var(--ink)] text-[color:var(--ink)] transition-colors`;
   const solidBtn = `px-3.5 py-1.5 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all shadow-xs ${
     isDark ? 'bg-amber-500 hover:bg-amber-400 text-slate-950' : 'bg-slate-900 hover:bg-slate-800 text-white'
   }`;
@@ -97,8 +93,8 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
 
   return (
     <div
-      className={`rounded-2xl border p-3.5 sm:p-4 ${
-        isDark ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-white shadow-xl' : 'bg-white border-slate-300 text-slate-900 shadow-sm'
+      className={`rounded-2xl border p-4 sm:p-5 ${
+        isDark ? 'bg-[color:var(--surface)] border-[color:var(--line)] text-white shadow-lg' : 'bg-white border-[color:var(--line)] text-slate-900 shadow-sm'
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -145,12 +141,12 @@ export const TimePickerControls: React.FC<TimePickerControlsProps> = ({
           )}
           {onChangeCity && (
             <button type="button" onClick={onChangeCity} className={outlineBtn}>
-              <MapPin className="w-3.5 h-3.5 text-amber-600" />
+              <MapPin className="w-3.5 h-3.5 opacity-70" />
               <span>{t.changeCity}</span>
             </button>
           )}
           <button type="button" onClick={() => setIsOpen((v) => !v)} className={outlineBtn} aria-expanded={isOpen}>
-            {isOpen ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5 text-amber-600" />}
+            {isOpen ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5 opacity-70" />}
             <span>{isOpen ? t.closePicker : t.setTimeDate}</span>
           </button>
         </div>

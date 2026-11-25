@@ -32,8 +32,8 @@ export function SegmentedToggle<T extends string>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      style={{ width: 92 }}
-      className={`relative h-10 shrink-0 rounded-full grid grid-cols-2 border select-none ${
+      style={{ width: 84 }}
+      className={`relative h-9 shrink-0 rounded-full grid grid-cols-2 border select-none ${
         isDark ? 'bg-[color:var(--surface)] border-[color:var(--line)]' : 'bg-white border-slate-300'
       }`}
     >
