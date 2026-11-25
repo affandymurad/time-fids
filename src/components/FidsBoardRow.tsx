@@ -8,7 +8,8 @@ import { CalendarEvent } from '../utils/calendar';
 import { playRemoveSound } from '../utils/audio';
 import { TRANSLATIONS, getCityName, getCountryName, getTimeZoneName } from '../utils/i18n';
 import wikipediaLogo from '../assets/wikipedia-logo.svg';
-import { Home, Trash2, Moon, Briefcase, Globe2, Sun, Building2, Clock } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Home, X, Trash2, Moon, Briefcase, Globe2, Sun, Building2, Clock } from 'lucide-react';
 
 // "NEW YORK" -> "New York", "ST. JOHN'S" -> "St. John's", drops "(DT)"/"(ST)" suffixes
 const toTitleCase = (name: string) =>
@@ -201,6 +202,12 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
     timezone: city.timezone,
   };
   const toggleDetails = () => setShowDetails((v) => !v);
+  useEffect(() => {
+    if (!showDetails) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setShowDetails(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [showDetails]);
   const rowTitle = lang === 'id' ? 'Klik untuk melihat detail lengkap' : 'Click to see full details';
 
   const timeEl = (
@@ -321,6 +328,111 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
         </div>
   );
 
+  const tzName = getTimeZoneName(city.timezone, new Date(), lang);
+  const tzAbbrNow = getTimeZoneAbbr(city.timezone, city.tzAbbr, new Date(), city.countryCode);
+  const showAbbr = /^[A-Za-z]{2,5}$/.test(tzAbbrNow) && !tzName.includes(`(${tzAbbrNow})`);
+  const countryLabel = getCountryName(city.country, lang, city.countryCode);
+  const closeLabel = lang === 'id' ? 'Tutup' : 'Close';
+  const detailRow = 'flex items-start gap-3 rounded-xl border border-[color:var(--line)] px-3.5 py-3';
+
+  const detailsModal = (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs"
+      onMouseDown={(e) => e.target === e.currentTarget && setShowDetails(false)}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={cityLabel}
+        className="w-full max-w-md rounded-2xl shadow-2xl border border-[color:var(--line)] bg-[color:var(--surface)] text-[color:var(--ink)] max-h-[90vh] overflow-hidden flex flex-col"
+      >
+        {/* Header */}
+        <div className="px-5 pt-4 pb-3 flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <CountryFlag countryCode={city.countryCode} countryName={countryLabel} size="md" />
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold leading-tight truncate">{toTitleCase(cityLabel)}</h2>
+              <p className="text-sm opacity-70 truncate">{countryLabel}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowDetails(false)}
+            aria-label={closeLabel}
+            className="p-1.5 rounded-lg opacity-70 hover:opacity-100 hover:bg-[color:var(--surface-2)] transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Time summary */}
+        <div className="mx-5 mb-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--surface-2)] px-4 py-3 flex items-baseline justify-between gap-3 flex-wrap">
+          <span className="font-mono text-3xl tracking-tight">{shownTime}</span>
+          <span className="text-sm opacity-75">{timeDetails.fullDateStr} · {timeDetails.offsetStr}</span>
+        </div>
+
+        {/* Facts */}
+        <div className="px-5 pb-4 overflow-y-auto space-y-2 text-[15px]">
+          <div className={detailRow}>
+            {timeDetails.isBusinessHours ? (
+              <Briefcase className="w-4 h-4 mt-1 text-emerald-500 shrink-0" />
+            ) : (
+              <Moon className="w-4 h-4 mt-1 text-indigo-500 shrink-0" />
+            )}
+            <span>{timeDetails.isBusinessHours ? t.businessHoursActive : timeDetails.isWeekend ? t.weekend : t.offHours}</span>
+          </div>
+          <div className={detailRow}>
+            <Sun className={`w-4 h-4 mt-1 shrink-0 ${timeDetails.isDst ? 'text-amber-500' : 'opacity-50'}`} />
+            <span>{timeDetails.isDst ? t.dstActive : t.standardTime}</span>
+          </div>
+          <div className={detailRow}>
+            <Globe2 className="w-4 h-4 mt-1 shrink-0 opacity-60" />
+            <div className="min-w-0">
+              <div>
+                {tzName}
+                {showAbbr ? <span className="font-mono"> · {tzAbbrNow}</span> : null}
+              </div>
+              <div className="text-sm opacity-70 break-all">{city.timezone} ({timeDetails.offsetStr})</div>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-3 pt-1">
+            <span className="text-sm opacity-70">{lang === 'id' ? 'Tampilan papan' : 'Board shows'}</span>
+            {modeToggle}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="px-5 py-3.5 border-t border-[color:var(--line)] flex flex-wrap items-center justify-between gap-2">
+          <a
+            href={wikipediaUrl(city, lang)}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={lang === 'id' ? `Buka Wikipedia: ${toTitleCase(city.name)}` : `Open Wikipedia: ${toTitleCase(city.name)}`}
+            className="px-3 py-1.5 rounded-lg border border-[color:var(--line)] text-sm font-medium flex items-center gap-1.5 hover:border-[color:var(--ink)] transition-colors"
+          >
+            <img src={wikipediaLogo} alt="" className="w-4 h-4" draggable={false} />
+            {city.code ? (lang === 'id' ? `Kota ${city.code}` : `${city.code} City`) : 'Wikipedia'}
+          </a>
+          {isHome ? (
+            <span className="text-sm opacity-70">{t.myCityHelp}</span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                onSetHome(city);
+                setShowDetails(false);
+              }}
+              className="tb-btn primary !h-9"
+            >
+              <Home className="w-4 h-4" />
+              {t.setHome}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div
       ref={rootRef}
@@ -363,88 +475,8 @@ export const FidsBoardRow: React.FC<FidsBoardRowProps> = ({
       )}
 
 
-      {/* Expanded details bar (Toggled on click) */}
-      {showDetails && (
-        <div
-          className={`mt-3 pt-3 border-t text-[15px] leading-relaxed flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 ${
-            isDark ? "border-slate-700 text-slate-200" : "border-slate-300 text-slate-800"
-          }`}
-        >
-          <div className="flex flex-wrap items-center gap-3 sm:gap-5">
-            <span className="flex items-center gap-1.5">
-              {timeDetails.isBusinessHours ? (
-                <>
-                  <Briefcase className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className={`font-bold ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>{t.businessHoursActive}</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>{timeDetails.isWeekend ? t.weekend : t.offHours}</span>
-                </>
-              )}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Sun className={`w-3.5 h-3.5 ${timeDetails.isDst ? 'text-amber-500' : 'text-slate-500'}`} />
-              <span className={timeDetails.isDst ? 'font-bold' : ''}>
-                {timeDetails.isDst ? t.dstActive : t.standardTime}
-              </span>
-            </span>
-            <span className="flex items-start gap-1.5 min-w-0">
-              <Globe2 className="w-3.5 h-3.5 mt-0.5 shrink-0 text-slate-500" />
-              <span className="min-w-0">
-              {t.timezone}:{" "}
-              <strong className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
-                {getTimeZoneName(city.timezone, new Date(), lang)}
-              </strong>
-              {(() => {
-                const abbr = getTimeZoneAbbr(city.timezone, city.tzAbbr, new Date(), city.countryCode);
-                return /^[A-Za-z]{2,5}$/.test(abbr) && !getTimeZoneName(city.timezone, new Date(), lang).includes(`(${abbr})`) ? <span className="font-mono font-bold whitespace-nowrap">{" · "}{abbr}</span> : null;
-              })()}{" "}
-              <span title={city.timezone}>({timeDetails.offsetStr})</span>
-              </span>
-            </span>
-            {isWide && modeToggle}
-          </div>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 w-full sm:w-auto">
-            <span className="flex items-center gap-2 min-w-0">
-              <CountryFlag countryCode={city.countryCode} countryName={getCountryName(city.country, lang, city.countryCode)} size="sm" />
-              <span>{getCountryName(city.country, lang, city.countryCode)}</span>
-            </span>
-            <span className="flex items-center gap-2 ml-auto sm:ml-5">
-              {!isWide && modeToggle}
-              <a
-                href={wikipediaUrl(city, lang)}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={lang === "id" ? `Buka Wikipedia: ${toTitleCase(city.name)}` : `Open Wikipedia: ${toTitleCase(city.name)}`}
-                className="px-1.5 py-1 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-900 border border-slate-300 font-mono text-sm font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
-              >
-                <img src={wikipediaLogo} alt="Wikipedia" className="w-4 h-4" draggable={false} />
-                {city.code ? (lang === "id" ? `Kota ${city.code}` : `${city.code} City`) : "Wikipedia"}
-              </a>
-            </span>
-          </div>
-          <div className="w-full flex flex-wrap items-center gap-2">
-            {isHome ? (
-              <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{t.myCityHelp}</p>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onSetHome(city)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1.5 border transition-colors ${
-                  isDark
-                    ? 'bg-[color:var(--surface-2)] border-[color:var(--line)] text-slate-100 hover:bg-[color:var(--surface-3)]'
-                    : 'bg-white border-slate-400/70 text-slate-900 hover:bg-slate-200'
-                }`}
-              >
-                <Home className="w-4 h-4" />
-                {t.setHome}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Details popup (opened by clicking the row) */}
+      {showDetails && createPortal(detailsModal, document.body)}
     </div>
   );
 };
