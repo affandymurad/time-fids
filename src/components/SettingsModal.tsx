@@ -79,7 +79,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   : 'border-slate-200 dark:border-slate-800 hover:bg-slate-800/40 text-slate-400'
               }`}
             >
-              <CountryFlag countryCode="gb" countryName="English" size="md" />
+              <CountryFlag countryCode="us" countryName="English" size="md" />
               <span>English</span>
             </button>
             <button

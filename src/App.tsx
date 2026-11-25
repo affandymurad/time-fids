@@ -411,7 +411,7 @@ export default function App() {
               value={lang}
               onChange={setLang}
               options={[
-                { value: 'en', label: <CountryFlag countryCode="gb" countryName="English" size="md" />, title: 'English' },
+                { value: 'en', label: <CountryFlag countryCode="us" countryName="English" size="md" />, title: 'English' },
                 { value: 'id', label: <CountryFlag countryCode="id" countryName="Indonesia" size="md" />, title: 'Bahasa Indonesia' },
               ]}
             />
