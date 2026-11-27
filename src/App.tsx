@@ -66,9 +66,20 @@ interface DateGroup {
   }[];
 }
 
+// URL query params (?view=clock|map&lang=en|id) take priority over saved preferences so links are shareable
+const readQuery = () => {
+  try {
+    return new URLSearchParams(window.location.search);
+  } catch {
+    return new URLSearchParams();
+  }
+};
+
 export default function App() {
   // 1. Language State
   const [lang, setLang] = useState<Language>(() => {
+    const q = readQuery().get('lang');
+    if (q === 'id' || q === 'en') return q;
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.LANG);
       if (saved === 'id' || saved === 'en') return saved;
@@ -153,7 +164,7 @@ export default function App() {
   });
 
   // 3. View Mode: Clock vs Map
-  const [viewTab, setViewTab] = useState<ViewTab>('clock');
+  const [viewTab, setViewTab] = useState<ViewTab>(() => (readQuery().get('view') === 'map' ? 'map' : 'clock'));
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isCitySearchOpen, setIsCitySearchOpen] = useState<boolean>(false);
   const [isHomePickerOpen, setIsHomePickerOpen] = useState(false);
@@ -235,6 +246,18 @@ export default function App() {
       console.warn('Failed saving language', e);
     }
   }, [lang]);
+
+  // Keep ?view= and ?lang= in the address bar in sync with the UI (no extra history entries)
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', viewTab);
+      url.searchParams.set('lang', lang);
+      window.history.replaceState(null, '', url);
+    } catch (e) {
+      console.warn('Failed updating URL', e);
+    }
+  }, [viewTab, lang]);
 
   // Derived Home City
   const homeCity = useMemo(() => {
